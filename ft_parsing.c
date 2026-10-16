@@ -6,14 +6,13 @@
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/16 14:24:02 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/16 15:21:58 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/16 15:36:08 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "alib/libft.h"
 #include <unistd.h>
 #include "push_swap.h"
-
+#include <stdlib.h>
 
 int is_valid_number(char *str)
 {
