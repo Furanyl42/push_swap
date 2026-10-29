@@ -6,7 +6,7 @@
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/16 15:51:23 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/29 16:35:37 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 16:57:23 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,16 @@ int sort_three(t_stack *a)
     int n1 = get_stack_element(a, 1);
     int n2 = get_stack_element(a, 2);
 
-	count++;
     if (n0 > n1 && n0 > n2)
-        ra(a);
+	{
+		count++;
+		ra(a);
+	}
     else if (n1 > n0 && n1 > n2)
-        rra(a);
+	{
+		count++;
+		rra(a);
+	}    
 
     n0 = get_stack_element(a, 0);
     n1 = get_stack_element(a, 1);
@@ -81,6 +86,7 @@ int sort_five(t_stack *a, t_stack *b)
 			}
         }
         pb(a, b);
+		count++;
     }
     count += sort_three(a);
     while (b->size > 0)

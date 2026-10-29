@@ -6,7 +6,7 @@
 #    By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/10/19 17:10:39 by nide-wil          #+#    #+#              #
-#    Updated: 2026/10/29 15:49:58 by nide-wil         ###   ########.fr        #
+#    Updated: 2026/10/29 16:57:50 by nide-wil         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -64,8 +64,8 @@ $(NAME): $(OBJ) $(LIBFT)
 test: $(LIBFT) $(TEST_OBJ)
 	$(CC) $(CFLAGS) $(TEST_OBJ) $(LIBFT_LIB) -o $(TEST_NAME)
 	@./$(TEST_NAME)
-	@rm -f $(TEST_NAME) $(TEST_OBJ)
-	@make fclean
+	# @rm -f $(TEST_NAME) $(TEST_OBJ)
+	# @make fclean
 
 
 clean:

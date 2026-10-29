@@ -1,0 +1,771 @@
+pb
+pb
+pb
+rrb
+pb
+rb
+pb
+rb
+pb
+pb
+rrb
+pb
+rrb
+pb
+pb
+rb
+pb
+rr
+ra
+pb
+pb
+rb
+rb
+rb
+rb
+rb
+pb
+rb
+pb
+rrr
+pb
+rb
+rb
+rb
+rb
+rb
+pb
+rb
+rb
+pb
+pb
+ra
+pb
+rrr
+rrr
+rrr
+pb
+rra
+pb
+ra
+ra
+ra
+rrb
+pb
+ra
+ra
+rrb
+pb
+rb
+rb
+rb
+rb
+pb
+rr
+rb
+rb
+rb
+pb
+rra
+rra
+pb
+ra
+ra
+ra
+ra
+rrb
+pb
+rr
+rb
+rb
+pb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+pb
+ra
+pb
+rrr
+rrb
+rrb
+pb
+rr
+rr
+rr
+rr
+pb
+ra
+rrb
+pb
+rr
+rb
+rb
+pb
+ra
+ra
+ra
+ra
+ra
+pb
+ra
+ra
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+pb
+rr
+rb
+rb
+pb
+rr
+rr
+rr
+rr
+rr
+rb
+rb
+rb
+pb
+ra
+ra
+ra
+ra
+ra
+ra
+rrb
+pb
+rr
+rr
+rb
+pb
+ra
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+pb
+rrr
+rrr
+rrr
+rrb
+rrb
+pb
+rrr
+rrr
+rra
+rra
+rra
+pb
+ra
+rrb
+rrb
+rrb
+pb
+ra
+rrb
+rrb
+pb
+rrb
+pb
+rr
+ra
+ra
+ra
+pb
+rrb
+rrb
+pb
+rrr
+rrr
+pb
+rrr
+rrr
+pb
+ra
+ra
+pb
+ra
+rrb
+rrb
+pb
+pb
+pb
+rrr
+rrr
+rrr
+pb
+rrb
+pb
+rrb
+pb
+ra
+ra
+pb
+ra
+rrb
+rrb
+rrb
+rrb
+pb
+rrb
+rrb
+pb
+rrr
+rrr
+rrr
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+pb
+rrb
+pb
+rrb
+rrb
+rrb
+pb
+rr
+rr
+rr
+ra
+ra
+ra
+ra
+ra
+ra
+ra
+ra
+pb
+rrr
+rrr
+rrr
+rrr
+rrr
+rrr
+rrr
+rrr
+rrr
+rrr
+rrb
+rrb
+rrb
+rrb
+pb
+rrb
+rrb
+pb
+ra
+ra
+ra
+pb
+rb
+rb
+rb
+pb
+rb
+rb
+pb
+rr
+rb
+pb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+pb
+rb
+pb
+rr
+rr
+rb
+pb
+rr
+rr
+rr
+ra
+ra
+ra
+ra
+ra
+ra
+pb
+rr
+rr
+ra
+ra
+ra
+pb
+rrr
+rrr
+rrr
+rrr
+rrr
+rrr
+rrr
+rrr
+rrb
+pb
+rrr
+rrb
+pb
+rrb
+rrb
+rrb
+rrb
+pb
+rb
+pb
+rr
+rr
+rb
+rb
+rb
+rb
+rb
+rb
+pb
+rra
+rb
+rb
+pb
+rrr
+rrr
+rrr
+rrr
+rrr
+rrr
+rrr
+rrr
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+pb
+rra
+pb
+rrr
+pb
+rrb
+pb
+rrr
+rrr
+pb
+pb
+rr
+rb
+pb
+pb
+rr
+rr
+rb
+rb
+rb
+pb
+rr
+rr
+rr
+ra
+pb
+rb
+rb
+rb
+rb
+rb
+rb
+pb
+rra
+pb
+rrr
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+rrb
+pb
+rrr
+rrr
+pb
+pb
+rra
+sa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+pa
+rra
+rra
+pa
+pa
+pa
+pa
+pa
+rra
+pa
+pa
+pa
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+rra
+--- STATS --- 
+Score de désordre initial : 0.5119 (51.2%)
+-------------
+
+
+┌─────────┬─────────┐
+│ Stack A │ Stack B │
+├─────────┼─────────┤
+│      71 │         │
+│      21 │         │
+│      46 │         │
+│     354 │         │
+│     286 │         │
+│     151 │         │
+│     198 │         │
+│     343 │         │
+│     410 │         │
+│      18 │         │
+│      11 │         │
+│      87 │         │
+│     334 │         │
+│     488 │         │
+│     492 │         │
+│     330 │         │
+│     314 │         │
+│     157 │         │
+│      98 │         │
+│     108 │         │
+│     454 │         │
+│     130 │         │
+│     397 │         │
+│     304 │         │
+│     383 │         │
+│     182 │         │
+│     328 │         │
+│     230 │         │
+│      81 │         │
+│     172 │         │
+│     359 │         │
+│     296 │         │
+│     433 │         │
+│     205 │         │
+│     419 │         │
+│     173 │         │
+│     244 │         │
+│     323 │         │
+│     258 │         │
+│      73 │         │
+│      95 │         │
+│     400 │         │
+│     160 │         │
+│     276 │         │
+│     111 │         │
+│     293 │         │
+│     114 │         │
+│     267 │         │
+│     190 │         │
+│     185 │         │
+│     472 │         │
+│     443 │         │
+│     499 │         │
+│     272 │         │
+│     493 │         │
+│     394 │         │
+│     325 │         │
+│      93 │         │
+│     311 │         │
+│     436 │         │
+│     449 │         │
+│     141 │         │
+│     150 │         │
+│     381 │         │
+│     253 │         │
+│     125 │         │
+│     327 │         │
+│      62 │         │
+│     342 │         │
+│      85 │         │
+│     396 │         │
+│     261 │         │
+│     322 │         │
+│     476 │         │
+│     248 │         │
+│      26 │         │
+│     278 │         │
+│     136 │         │
+│      15 │         │
+│     155 │         │
+│     455 │         │
+│     490 │         │
+│      39 │         │
+│     161 │         │
+│      72 │         │
+│      83 │         │
+│      92 │         │
+│     285 │         │
+│     289 │         │
+│     162 │         │
+│     313 │         │
+│     200 │         │
+│     223 │         │
+│      48 │         │
+│     377 │         │
+│     415 │         │
+│     117 │         │
+│     118 │         │
+│     228 │         │
+│     207 │         │
+└─────────┴─────────┘
+  (size: 100)   (size: 0)
+
+
+┌─────────┬─────────┐
+│ Stack A │ Stack B │
+├─────────┼─────────┤
+│      11 │         │
+│      15 │         │
+│      18 │         │
+│      21 │         │
+│      26 │         │
+│      39 │         │
+│      46 │         │
+│      48 │         │
+│      62 │         │
+│      71 │         │
+│      72 │         │
+│      73 │         │
+│      81 │         │
+│      83 │         │
+│      85 │         │
+│      87 │         │
+│      92 │         │
+│      93 │         │
+│      95 │         │
+│      98 │         │
+│     108 │         │
+│     111 │         │
+│     114 │         │
+│     117 │         │
+│     118 │         │
+│     125 │         │
+│     130 │         │
+│     136 │         │
+│     141 │         │
+│     150 │         │
+│     151 │         │
+│     155 │         │
+│     157 │         │
+│     160 │         │
+│     161 │         │
+│     162 │         │
+│     172 │         │
+│     173 │         │
+│     182 │         │
+│     185 │         │
+│     190 │         │
+│     198 │         │
+│     200 │         │
+│     205 │         │
+│     207 │         │
+│     223 │         │
+│     228 │         │
+│     230 │         │
+│     244 │         │
+│     248 │         │
+│     253 │         │
+│     258 │         │
+│     261 │         │
+│     267 │         │
+│     272 │         │
+│     276 │         │
+│     278 │         │
+│     285 │         │
+│     286 │         │
+│     289 │         │
+│     293 │         │
+│     296 │         │
+│     304 │         │
+│     311 │         │
+│     313 │         │
+│     314 │         │
+│     322 │         │
+│     323 │         │
+│     325 │         │
+│     327 │         │
+│     328 │         │
+│     330 │         │
+│     334 │         │
+│     342 │         │
+│     343 │         │
+│     354 │         │
+│     359 │         │
+│     377 │         │
+│     381 │         │
+│     383 │         │
+│     394 │         │
+│     396 │         │
+│     397 │         │
+│     400 │         │
+│     410 │         │
+│     415 │         │
+│     419 │         │
+│     433 │         │
+│     436 │         │
+│     443 │         │
+│     449 │         │
+│     454 │         │
+│     455 │         │
+│     472 │         │
+│     476 │         │
+│     488 │         │
+│     490 │         │
+│     492 │         │
+│     493 │         │
+│     499 │         │
+└─────────┴─────────┘
+  (size: 100)   (size: 0)
+
+Count: 552
