@@ -6,7 +6,7 @@
 #    By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/10/19 17:10:39 by nide-wil          #+#    #+#              #
-#    Updated: 2026/10/29 12:12:27 by nide-wil         ###   ########.fr        #
+#    Updated: 2026/10/29 14:52:56 by nide-wil         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,6 +28,7 @@ TEST_SRC 	= main.c \
 			  sort_small.c \
 			  stack.c \
 			  generator.c \
+			  disorder.c \
 
 TEST_OBJ	= $(TEST_SRC:.c=.o)
 TEST_NAME	= test

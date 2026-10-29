@@ -6,7 +6,7 @@
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/16 14:08:12 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/29 12:12:41 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 15:10:16 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,4 +32,9 @@ void sb(t_stack *b);
 void sa(t_stack *a);
 
 t_stack *generate_random_stack(int n, int min, int max);
+t_stack *init_stack(int capacity);
 void print_stacks(t_stack *a, t_stack *b);
+void free_stack(t_stack *s);
+
+double compute_disorder(t_stack a);
+

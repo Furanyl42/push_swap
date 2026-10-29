@@ -6,12 +6,13 @@
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/16 15:34:48 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/29 12:11:42 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 15:09:59 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 int get_stack_element(t_stack *s, int index)
 {
@@ -56,4 +57,38 @@ void print_stacks(t_stack *a, t_stack *b)
     }
     printf("└─────────┴─────────┘\n");
     printf("  (size: %d)   (size: %d)\n\n", a->size, b->size);
+}
+
+t_stack *init_stack(int capacity)
+{
+    t_stack *s;
+
+    s = malloc(sizeof(t_stack));
+    if (!s)
+        return (NULL);
+
+    s->capacity = capacity;
+    s->size = 0;
+    s->head = 0;
+
+    s->tab = malloc(sizeof(int) * capacity);
+    if (!s->tab)
+    {
+        free(s);
+        return (NULL);
+    }
+
+    return (s);
+}
+
+void free_stack(t_stack *s)
+{
+    if (!s)
+        return;
+    if (s->tab)
+    {
+        free(s->tab);
+        s->tab = NULL;
+    }
+    free(s);
 }
