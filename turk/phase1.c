@@ -6,7 +6,7 @@
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/29 15:25:51 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/29 15:28:00 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 16:04:28 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ int find_target_in_b(t_stack *b, int elem_a)
     while (i < b->size)
     {
         current_val = get_stack_element(b, i);
-        
+        // On cherche le plus grand nombre de b qui est inférieur à elem_a
         if (current_val < elem_a && current_val > closest_smaller)
         {
             closest_smaller = current_val;
@@ -57,9 +57,38 @@ int find_target_in_b(t_stack *b, int elem_a)
         }
         i++;
     }
-    
+    // Si elem_a est plus petit que tous les éléments de b,
+    // sa cible est le maximum de b (pour se placer tout en bas)
     if (target_idx == -1)
         target_idx = get_max_index(b);
 
     return (target_idx);
+}
+
+void move_cheapest_a_to_b(t_stack *a, t_stack *b)
+{
+    int     i;
+    int     min_cost;
+    t_cost  best_move;
+    t_cost  current_move;
+
+    min_cost = INT_MAX;
+    i = 0;
+    while (i < a->size)
+    {
+        current_move.a_idx = i;
+        current_move.b_idx = find_target_in_b(b, get_stack_element(a, i));
+        
+        current_move.cost_a = get_cost(current_move.a_idx, a->size);
+        current_move.cost_b = get_cost(current_move.b_idx, b->size);
+        current_move.total_cost = calculate_total_cost(current_move.cost_a, current_move.cost_b);
+
+        if (current_move.total_cost < min_cost)
+        {
+            min_cost = current_move.total_cost;
+            best_move = current_move;
+        }
+        i++;
+    }
+    execute_optimal_moves(a, b, best_move, 1);
 }

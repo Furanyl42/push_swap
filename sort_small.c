@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   sort.c                                             :+:      :+:    :+:   */
+/*   sort_small.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/16 15:51:23 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/28 11:04:31 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 15:57:49 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,19 +59,13 @@ void sort_five(t_stack *a, t_stack *b)
         min_idx = get_min_index(a);
         if (min_idx <= a->size / 2)
         {
-            while (min_idx > 0)
-            {
+            while (get_min_index(a) != 0)
                 ra(a);
-                min_idx--;
-            }
         }
         else
         {
-            while (min_idx < a->size)
-            {
+            while (get_min_index(a) != 0)
                 rra(a);
-                min_idx++;
-            }
         }
         pb(a, b);
     }

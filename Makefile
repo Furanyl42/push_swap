@@ -6,7 +6,7 @@
 #    By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/10/19 17:10:39 by nide-wil          #+#    #+#              #
-#    Updated: 2026/10/29 14:52:56 by nide-wil         ###   ########.fr        #
+#    Updated: 2026/10/29 15:49:58 by nide-wil         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,6 +29,12 @@ TEST_SRC 	= main.c \
 			  stack.c \
 			  generator.c \
 			  disorder.c \
+			  sort_dispatcher.c \
+			  turk/cost.c \
+			  turk/move_utils.c \
+			  turk/phase1.c \
+			  turk/phase2.c \
+			  turk/turk.c \
 
 TEST_OBJ	= $(TEST_SRC:.c=.o)
 TEST_NAME	= test

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_basic_op.c                                      :+:      :+:    :+:   */
+/*   ops.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/16 15:26:28 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/16 15:46:35 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 16:16:30 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,50 +103,100 @@ void pa(t_stack *a, t_stack *b)
 
 void ra(t_stack *a)
 {
+    int val;
+    int tail;
+
     if (a->size < 2)
         return;
+    val = a->tab[a->head];
+    tail = (a->head + a->size) % a->capacity;
+    a->tab[tail] = val;
     a->head = (a->head + 1) % a->capacity;
     write(1, "ra\n", 3);
 }
 
 void rb(t_stack *b)
 {
+    int val;
+    int tail;
+
     if (b->size < 2)
         return;
+    val = b->tab[b->head];
+    tail = (b->head + b->size) % b->capacity;
+    b->tab[tail] = val;
     b->head = (b->head + 1) % b->capacity;
     write(1, "rb\n", 3);
 }
 
-void rr(t_stack *a, t_stack *b)
-{
-    if (a->size >= 2)
-        a->head = (a->head + 1) % a->capacity;
-    if (b->size >= 2)
-        b->head = (b->head + 1) % b->capacity;
-    write(1, "rr\n", 3);
-}
-
 void rra(t_stack *a)
 {
+    int val;
+    int new_head;
+
     if (a->size < 2)
         return;
-    a->head = (a->head - 1 + a->capacity) % a->capacity;
+    val = a->tab[(a->head + a->size - 1) % a->capacity];
+    new_head = (a->head - 1 + a->capacity) % a->capacity;
+    a->tab[new_head] = val;
+    a->head = new_head;
     write(1, "rra\n", 4);
 }
 
 void rrb(t_stack *b)
 {
+    int val;
+    int new_head;
+
     if (b->size < 2)
         return;
-    b->head = (b->head - 1 + b->capacity) % b->capacity;
+    val = b->tab[(b->head + b->size - 1) % b->capacity];
+    new_head = (b->head - 1 + b->capacity) % b->capacity;
+    b->tab[new_head] = val;
+    b->head = new_head;
     write(1, "rrb\n", 4);
+}
+
+void rr(t_stack *a, t_stack *b)
+{
+    int val;
+    int tail;
+
+    if (a->size >= 2)
+    {
+        val = a->tab[a->head];
+        tail = (a->head + a->size) % a->capacity;
+        a->tab[tail] = val;
+        a->head = (a->head + 1) % a->capacity;
+    }
+    if (b->size >= 2)
+    {
+        val = b->tab[b->head];
+        tail = (b->head + b->size) % b->capacity;
+        b->tab[tail] = val;
+        b->head = (b->head + 1) % b->capacity;
+    }
+    write(1, "rr\n", 3);
 }
 
 void rrr(t_stack *a, t_stack *b)
 {
+    int val;
+    int new_head;
+
     if (a->size >= 2)
-        a->head = (a->head - 1 + a->capacity) % a->capacity;
+    {
+        val = a->tab[(a->head + a->size - 1) % a->capacity];
+        new_head = (a->head - 1 + a->capacity) % a->capacity;
+        a->tab[new_head] = val;
+        a->head = new_head;
+    }
     if (b->size >= 2)
-        b->head = (b->head - 1 + b->capacity) % b->capacity;
+    {
+        val = b->tab[(b->head + b->size - 1) % b->capacity];
+        new_head = (b->head - 1 + b->capacity) % b->capacity;
+        b->tab[new_head] = val;
+        b->head = new_head;
+    }
     write(1, "rrr\n", 4);
 }
