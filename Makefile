@@ -6,7 +6,7 @@
 #    By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/10/19 17:10:39 by nide-wil          #+#    #+#              #
-#    Updated: 2026/10/19 17:14:59 by nide-wil         ###   ########.fr        #
+#    Updated: 2026/10/29 12:12:27 by nide-wil         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,6 +20,18 @@ LIBFT_DIR   = libft
 LIBFT       = $(LIBFT_DIR)/libft.a
 LIBFT_INC   = -I$(LIBFT_DIR)
 LIBFT_LIB   = -L$(LIBFT_DIR) -lft
+
+# Configuration du test
+TEST_SRC 	= main.c \
+			  ops.c \
+			  parsing.c \
+			  sort_small.c \
+			  stack.c \
+			  generator.c \
+
+TEST_OBJ	= $(TEST_SRC:.c=.o)
+TEST_NAME	= test
+
 
 # Fichiers sources et objets
 SRC         = main.c ops.c parsing.c sort.c stack.c utils.c
@@ -41,6 +53,13 @@ $(NAME): $(OBJ) $(LIBFT)
 # Règle générique pour les fichiers .o
 %.o: %.c push_swap.h
 	$(CC) $(CFLAGS) $(INC) -c $< -o $@
+
+test: $(LIBFT) $(TEST_OBJ)
+	$(CC) $(CFLAGS) $(TEST_OBJ) $(LIBFT_LIB) -o $(TEST_NAME)
+	@./$(TEST_NAME)
+	@rm -f $(TEST_NAME) $(TEST_OBJ)
+	@make fclean
+
 
 clean:
 	rm -f $(OBJ)
