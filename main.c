@@ -6,7 +6,7 @@
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/19 16:47:08 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/29 17:58:38 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 18:03:38 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ int main(int argc, char **argv)
         return (1);
     }
 
-    nb_elements = a->capacity; // ou a->size selon ton implémentation
+    nb_elements = a->capacity;
     b = init_stack(nb_elements);
     if (!b)
     {
