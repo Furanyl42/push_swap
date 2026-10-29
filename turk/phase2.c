@@ -6,7 +6,7 @@
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/29 15:31:09 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/29 16:04:44 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 16:37:40 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ int find_target_in_a(t_stack *a, int elem_b)
     return (target_idx);
 }
 
-void move_cheapest_b_to_a(t_stack *a, t_stack *b)
+int move_cheapest_b_to_a(t_stack *a, t_stack *b)
 {
     int     i;
     int     min_cost;
@@ -90,14 +90,16 @@ void move_cheapest_b_to_a(t_stack *a, t_stack *b)
         }
         i++;
     }
-    execute_optimal_moves(a, b, best_move, 2);
+    return (execute_optimal_moves(a, b, best_move, 2));
 }
 
-void final_alignment(t_stack *a)
+int	 final_alignment(t_stack *a)
 {
     int min_idx;
     int cost;
+	int count;
 
+	count = 0;
     min_idx = find_min_index(a);
     cost = get_cost(min_idx, a->size);
 
@@ -107,11 +109,14 @@ void final_alignment(t_stack *a)
         {
             ra(a);
             cost--;
+			count++;
         }
         else
         {
             rra(a);
             cost++;
+			count++;
         }
     }
+	return (count);
 }

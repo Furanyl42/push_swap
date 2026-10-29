@@ -6,7 +6,7 @@
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/29 15:25:51 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/29 16:04:28 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 16:24:05 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ int find_target_in_b(t_stack *b, int elem_a)
     return (target_idx);
 }
 
-void move_cheapest_a_to_b(t_stack *a, t_stack *b)
+int move_cheapest_a_to_b(t_stack *a, t_stack *b)
 {
     int     i;
     int     min_cost;
@@ -90,5 +90,5 @@ void move_cheapest_a_to_b(t_stack *a, t_stack *b)
         }
         i++;
     }
-    execute_optimal_moves(a, b, best_move, 1);
+    return (execute_optimal_moves(a, b, best_move, 1));
 }
