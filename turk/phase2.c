@@ -6,7 +6,7 @@
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/29 15:31:09 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/29 16:37:40 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 17:53:06 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,6 @@ int find_target_in_a(t_stack *a, int elem_b)
     while (i < a->size)
     {
         current_val = get_stack_element(a, i);
-        // On cherche le plus petit nombre de a qui est supérieur à elem_b
         if (current_val > elem_b && current_val < closest_bigger)
         {
             closest_bigger = current_val;
@@ -57,8 +56,6 @@ int find_target_in_a(t_stack *a, int elem_b)
         }
         i++;
     }
-    // Si elem_b est plus grand que tous les éléments de a,
-    // sa cible est le minimum de a
     if (target_idx == -1)
         target_idx = find_min_index(a);
 

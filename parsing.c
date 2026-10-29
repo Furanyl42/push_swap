@@ -1,18 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_parsing.c                                       :+:      :+:    :+:   */
+/*   parsing.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/16 14:24:02 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/16 15:36:08 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 17:55:59 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <unistd.h>
-#include "push_swap.h"
 #include <stdlib.h>
+#include <limits.h>
+#include "push_swap.h"
+#include "../libft/libft.h"
 
 int is_valid_number(char *str)
 {
@@ -71,7 +73,22 @@ int has_duplicate(int *tab, int size, int val)
     return (0);
 }
 
-int parse_stack(t_stack *a, char **args)
+void free_split(char **split)
+{
+    int i;
+
+    if (!split)
+        return;
+    i = 0;
+    while (split[i])
+    {
+        free(split[i]);
+        i++;
+    }
+    free(split);
+}
+
+int parse_stack(t_stack *a, char **args, int is_split)
 {
     int     i;
     long    num;
@@ -104,5 +121,37 @@ int parse_stack(t_stack *a, char **args)
         a->tab[i] = (int)num;
         i++;
     }
+    if (is_split)
+        free_split(args);
     return (1);
+}
+
+t_stack *parse_input(int argc, char **argv)
+{
+    t_stack *a;
+    char    **args;
+    int     is_split;
+
+    a = malloc(sizeof(t_stack));
+    if (!a)
+        return (NULL);
+
+    // Cas où l'utilisateur passe une seule chaîne entre guillemets ex: "./push_swap "3 2 1""
+    if (argc == 2)
+    {
+        args = ft_split(argv[1], ' '); // Nécessite ta fonction ft_split de la Libft
+        is_split = 1;
+    }
+    else // Cas où l'utilisateur passe des arguments multiples ex: "./push_swap 3 2 1"
+    {
+        args = argv + 1;
+        is_split = 0;
+    }
+
+    if (!args || !parse_stack(a, args, is_split))
+    {
+        free(a);
+        return (NULL);
+    }
+    return (a);
 }

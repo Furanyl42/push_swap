@@ -6,7 +6,7 @@
 /*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/16 14:08:12 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/10/29 16:31:25 by nide-wil         ###   ########.fr       */
+/*   Updated: 2026/10/29 17:56:29 by nide-wil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,4 +66,5 @@ int    move_cheapest_a_to_b(t_stack *a, t_stack *b);
 int    move_cheapest_b_to_a(t_stack *a, t_stack *b);
 int    final_alignment(t_stack *a);
 
+t_stack *parse_input(int argc, char **argv);
 int sort_stacks(t_stack *a, t_stack *b);
