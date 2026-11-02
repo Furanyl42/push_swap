@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>push_swap</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+		<style>
+			body {
+				margin: 0;
+			}
+
+			.markdown-body-content {
+				box-sizing: border-box;
+				min-width: 200px;
+				max-width: 980px;
+				margin: 0 auto;
+				padding: 45px;
+			}
+
+			@media (max-width: 767px) {
+				.markdown-body-content {
+					padding: 15px;
+				}
+			}
+
+			.markdown-body {
+				--base-size-8: 8px;
+				--base-size-16: 16px;
+			}
+		</style>
+	</head>
+	<body class="markdown-body">
+		<article class="markdown-body-content"><p><em>This project has been created as part of the 42 curriculum by nide-wil, adesmet.</em></p>
+<h1>push_swap</h1>
+<h2>Description</h2>
+<p><strong>push_swap</strong> is a sorting project from the 42 curriculum. The goal is to sort a<br>
+list of integers using two stacks (<code class="notranslate">a</code> and <code class="notranslate">b</code>) and a limited set of operations,<br>
+while producing as few operations as possible.</p>
+<p>The program embeds four strategies:</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Selector</th>
+<th>Strategy</th>
+<th>Complexity class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">--simple</code></td>
+<td>Minimum extraction</td>
+<td>O(n²)</td>
+</tr>
+<tr>
+<td><code class="notranslate">--medium</code></td>
+<td>Chunk-based sorting</td>
+<td>O(n√n)</td>
+</tr>
+<tr>
+<td><code class="notranslate">--complex</code></td>
+<td>LSD radix sort on ranks</td>
+<td>O(n log n)</td>
+</tr>
+<tr>
+<td><code class="notranslate">--adaptive</code></td>
+<td>Chooses one of the three according to the measured disorder</td>
+<td>depends on regime</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><code class="notranslate">--adaptive</code> is the default when no selector is given. The program also supports<br>
+<code class="notranslate">--bench</code>, which prints sorting statistics to <code class="notranslate">stderr</code> without polluting the<br>
+operation stream on <code class="notranslate">stdout</code>.</p>
+<p>The implementation validates every argument, rejects duplicates and<br>
+out-of-range values, prints <code class="notranslate">Error</code> on <code class="notranslate">stderr</code> when needed, and does not use<br>
+global variables.</p>
+<h2>Instructions</h2>
+<h3>Compilation</h3>
+<div class="highlight highlight-source-shell"><pre class="notranslate">make        <span class="pl-c"><span class="pl-c">#</span> build push_swap (and libft)</span>
+make bonus  <span class="pl-c"><span class="pl-c">#</span> build the bonus checker</span>
+make clean  <span class="pl-c"><span class="pl-c">#</span> remove object files</span>
+make fclean <span class="pl-c"><span class="pl-c">#</span> remove object files and binaries</span>
+make re     <span class="pl-c"><span class="pl-c">#</span> rebuild from scratch</span></pre></div>
+<p>The project requires a C compiler (<code class="notranslate">cc</code>) and <code class="notranslate">make</code>.</p>
+<h3>Execution</h3>
+<div class="highlight highlight-source-shell"><pre class="notranslate">./push_swap 3 1 2
+./push_swap --simple 5 4 3 2 1
+./push_swap --medium 4 67 3 87 23
+./push_swap --complex 4 67 3 87 23
+./push_swap --adaptive 4 67 3 87 23</pre></div>
+<p>The first argument is the top of stack <code class="notranslate">a</code>. Operations are written to <code class="notranslate">stdout</code>,<br>
+one per line. With no arguments the program prints nothing and exits normally.</p>
+<h3>Benchmark mode</h3>
+<div class="highlight highlight-source-shell"><pre class="notranslate">./push_swap --bench --complex 5 4 3 2 1 <span class="pl-k">2&gt;</span>/tmp/bench.txt
+cat /tmp/bench.txt</pre></div>
+<p>Example output on <code class="notranslate">stderr</code>:</p>
+<pre lang="text" class="notranslate"><code class="notranslate">disorder: 100.00%
+strategy: Complex (O(n log n))
+total operations: 25
+sa: 0
+sb: 0
+ss: 0
+pa: 10
+pb: 10
+ra: 5
+rb: 0
+rr: 0
+rra: 0
+rrb: 0
+rrr: 0
+</code></pre>
+<h3>Error handling</h3>
+<p>Invalid input (non-integers, values outside the <code class="notranslate">int</code> range, duplicates, unknown<br>
+flags) produces <code class="notranslate">Error</code> followed by a newline on <code class="notranslate">stderr</code>.</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">./push_swap --adaptive 0 one 2 3
+./push_swap --simple 3 2 3
+./push_swap 2147483648</pre></div>
+<h3>Bonus checker</h3>
+<p>The bonus <code class="notranslate">checker</code> program reads operations from <code class="notranslate">stdin</code>, applies them to the<br>
+stack given as arguments, and prints <code class="notranslate">OK</code> when stack <code class="notranslate">a</code> is sorted and stack <code class="notranslate">b</code><br>
+is empty. It prints <code class="notranslate">KO</code> otherwise, and <code class="notranslate">Error</code> on <code class="notranslate">stderr</code> for invalid<br>
+arguments or unknown instructions.</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">make bonus
+ARG=<span class="pl-s"><span class="pl-pds">"</span>4 67 3 87 23<span class="pl-pds">"</span></span>
+./push_swap --complex <span class="pl-smi">$ARG</span> <span class="pl-k">|</span> ./checker <span class="pl-smi">$ARG</span>
+<span class="pl-c1">printf</span> <span class="pl-s"><span class="pl-pds">"</span>sa\npb\npa\n<span class="pl-pds">"</span></span> <span class="pl-k">|</span> ./checker 2 1</pre></div>
+<h2>Algorithms</h2>
+<h3>Disorder metric</h3>
+<p>Before any move, the program computes</p>
+<pre lang="text" class="notranslate"><code class="notranslate">disorder = (number of inverted pairs) / (total number of pairs)
+</code></pre>
+<p>where a pair <code class="notranslate">(i, j)</code> with <code class="notranslate">i &lt; j</code> is inverted when <code class="notranslate">a[i] &gt; a[j]</code>. This value is<br>
+between <code class="notranslate">0</code> (already sorted) and <code class="notranslate">1</code> (worst possible order) and is displayed<br>
+with two decimals in <code class="notranslate">--bench</code> mode.</p>
+<h3>Simple — O(n²)</h3>
+<p>The minimum of stack <code class="notranslate">a</code> is located, rotated to the top with the cheapest<br>
+direction (<code class="notranslate">ra</code> or <code class="notranslate">rra</code>), and pushed to <code class="notranslate">b</code> with <code class="notranslate">pb</code>. This is repeated until<br>
+<code class="notranslate">a</code> is empty. Stack <code class="notranslate">b</code> is then drained back into <code class="notranslate">a</code> with <code class="notranslate">pa</code>, which places the<br>
+values in ascending order.</p>
+<p>For each of the <code class="notranslate">n</code> extractions, finding and rotating the minimum costs at most<br>
+<code class="notranslate">O(n)</code>, hence an upper bound of <code class="notranslate">O(n²)</code> operations. Space usage is <code class="notranslate">O(n)</code> for<br>
+the stack arrays.</p>
+<h3>Medium — O(n√n)</h3>
+<p>A sorted copy of the input is built and split into chunks of roughly <code class="notranslate">√n</code><br>
+values. Chunks are processed in ascending order: while a chunk still has<br>
+elements in <code class="notranslate">a</code>, the program pushes the current top if it belongs to that chunk,<br>
+otherwise it rotates <code class="notranslate">a</code>. All pushed values therefore arrive in <code class="notranslate">b</code> grouped by<br>
+value range. Finally the maximum of <code class="notranslate">b</code> is repeatedly rotated to the top and<br>
+pushed back to <code class="notranslate">a</code>.</p>
+<p>There are about <code class="notranslate">√n</code> chunks, and each pass over a stack costs at most <code class="notranslate">O(n)</code><br>
+rotations, giving <code class="notranslate">O(n√n)</code> operations in the push_swap model. Space usage is<br>
+<code class="notranslate">O(n)</code> for the stacks plus <code class="notranslate">O(n)</code> for the sorted copy.</p>
+<h3>Complex — O(n log n)</h3>
+<p>The algorithm computes the rank of every value (its index in the sorted input)<br>
+and performs an LSD radix sort on those ranks, from the least significant bit to<br>
+the most significant one. For each bit, values whose bit is <code class="notranslate">0</code> are pushed to<br>
+<code class="notranslate">b</code>, while values whose bit is <code class="notranslate">1</code> are rotated in <code class="notranslate">a</code>; afterwards <code class="notranslate">b</code> is pushed<br>
+back onto <code class="notranslate">a</code>. Ranks are found with a binary search in <code class="notranslate">O(log n)</code>.</p>
+<p>There are <code class="notranslate">⌈log₂ n⌉</code> passes, each costing <code class="notranslate">O(n)</code> stack operations, for an upper<br>
+bound of <code class="notranslate">O(n log n)</code>. Space usage is <code class="notranslate">O(n)</code>.</p>
+<h3>Adaptive — threshold justification</h3>
+<p>The adaptive strategy follows the subject's regimes:</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Disorder</th>
+<th>Selected strategy</th>
+<th>Complexity target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code class="notranslate">&lt; 0.2</code></td>
+<td>Simple</td>
+<td><code class="notranslate">O(n²)</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">0.2 ≤ d &lt; 0.5</code></td>
+<td>Medium</td>
+<td><code class="notranslate">O(n√n)</code></td>
+</tr>
+<tr>
+<td><code class="notranslate">≥ 0.5</code></td>
+<td>Complex</td>
+<td><code class="notranslate">O(n log n)</code></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>Low-disorder inputs are almost sorted, so the quadratic minimum extraction<br>
+needs few rotations and remains cheap while keeping the implementation simple.<br>
+Medium disorder benefits from chunk partitioning, which reduces long rotations.<br>
+High disorder is handled by radix sort, whose cost grows predictably with<br>
+<code class="notranslate">n log n</code> and does not degrade on adversarial permutations. These thresholds<br>
+mirror the required complexity regimes and leave a safety margin around the<br>
+<code class="notranslate">0.2</code> and <code class="notranslate">0.5</code> boundaries.</p>
+<h3>Measured performance</h3>
+<p>Random inputs on the reference environment:</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Input size</th>
+<th><code class="notranslate">--simple</code></th>
+<th><code class="notranslate">--medium</code></th>
+<th><code class="notranslate">--complex</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100</td>
+<td>~1550</td>
+<td>~790</td>
+<td>~1080</td>
+</tr>
+<tr>
+<td>500</td>
+<td>~32400</td>
+<td>~8200</td>
+<td>~6800</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>For 500 random values, <code class="notranslate">--complex</code> stays below the 8000-operation "good" target<br>
+and close to the 5500-operation "excellent" target; <code class="notranslate">--adaptive</code> selects it for<br>
+typical random permutations.</p>
+<h2>Usage examples</h2>
+<div class="highlight highlight-source-shell"><pre class="notranslate"><span class="pl-c"><span class="pl-c">#</span> Sort and verify with the provided checker</span>
+ARG=<span class="pl-s"><span class="pl-pds">"</span>4 67 3 87 23<span class="pl-pds">"</span></span><span class="pl-k">;</span> ./push_swap --complex <span class="pl-smi">$ARG</span> <span class="pl-k">|</span> ./checker_linux <span class="pl-smi">$ARG</span>
+
+<span class="pl-c"><span class="pl-c">#</span> Count operations</span>
+./push_swap --adaptive <span class="pl-s"><span class="pl-pds">$(</span>shuf -i 0-9999 -n 500<span class="pl-pds">)</span></span> <span class="pl-k">|</span> wc -l
+
+<span class="pl-c"><span class="pl-c">#</span> Save benchmark output separately from the operation stream</span>
+./push_swap --bench --medium 9 1 8 2 7 3 <span class="pl-k">2&gt;</span>/tmp/bench.txt <span class="pl-k">&gt;</span>/tmp/moves.txt</pre></div>
+<h2>Resources</h2>
+<ul>
+<li>42 push_swap subject (v1.2).</li>
+<li>Big-O notation and algorithm analysis:<br>
+<a href="https://en.wikipedia.org/wiki/Big_O_notation" rel="nofollow">https://en.wikipedia.org/wiki/Big_O_notation</a></li>
+<li>Radix sort:<br>
+<a href="https://en.wikipedia.org/wiki/Radix_sort" rel="nofollow">https://en.wikipedia.org/wiki/Radix_sort</a></li>
+<li>Chunk-based / bucket sorting:<br>
+<a href="https://en.wikipedia.org/wiki/Bucket_sort" rel="nofollow">https://en.wikipedia.org/wiki/Bucket_sort</a></li>
+<li>Stack data structure:<br>
+<a href="https://en.wikipedia.org/wiki/Stack_(abstract_data_type)" rel="nofollow">https://en.wikipedia.org/wiki/Stack_(abstract_data_type)</a></li>
+<li><code class="notranslate">checker_linux</code>, the reference checker distributed with the subject.</li>
+<li>Norminette, the 42 coding-style checker.</li>
+</ul>
+<h3>AI usage</h3>
+<p>AI was used only to generate and format this README. It was not used to design,<br>
+write, debug, or review the source code; the algorithms, tests, and fixes were<br>
+produced by the learners.</p>
+<h2>Contributions</h2>
+<ul>
+<li><strong>nide-wil</strong>: stack representation, the eleven operations and their counters,<br>
+disorder computation, the Simple and Complex strategies, adaptive dispatch, and<br>
+correctness/performance testing.</li>
+<li><strong>adesmet</strong>: argument parsing and validation, the Medium chunk-based strategy,<br>
+benchmark output, the bonus checker, Makefile and libft integration, Norminette<br>
+and leak verification, and README validation.</li>
+</ul></article>
+	</body>
+</html>
