@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Explication détaillée de l’algorithme `--medium`</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+		<style>
+			body {
+				margin: 0;
+			}
+
+			.markdown-body-content {
+				box-sizing: border-box;
+				min-width: 200px;
+				max-width: 980px;
+				margin: 0 auto;
+				padding: 45px;
+			}
+
+			@media (max-width: 767px) {
+				.markdown-body-content {
+					padding: 15px;
+				}
+			}
+
+			.markdown-body {
+				--base-size-8: 8px;
+				--base-size-16: 16px;
+			}
+		</style>
+	</head>
+	<body class="markdown-body">
+		<article class="markdown-body-content"><h1>Explication détaillée de l’algorithme <code class="notranslate">--medium</code></h1>
+<h2>Vue d’ensemble</h2>
+<p>L’algorithme <strong>medium</strong> est la stratégie <code class="notranslate">--medium</code>. Il est implémenté principalement dans :</p>
+<ul>
+<li><code class="notranslate">sort_medium.c</code> : normalisation, calcul des paramètres, découpage en seaux ;</li>
+<li><code class="notranslate">complex_pull.c</code> / <code class="notranslate">complex_insert.c</code> / <code class="notranslate">complex_move.c</code> : remontée des seaux et insertion triée dans <code class="notranslate">a</code>.</li>
+</ul>
+<p>C’est un <strong>tri par seaux</strong> (<em>chunk/bucket sort</em>) en deux grandes phases :</p>
+<ol>
+<li><strong>Phase de distribution</strong> : on découpe les valeurs en bandes de rangs, puis on pousse les bandes de <code class="notranslate">a</code> vers <code class="notranslate">b</code>, de la plus petite à la plus grande. Résultat : <code class="notranslate">b</code> contient les bandes empilées dans l’ordre décroissant, la plus grande au sommet.</li>
+<li><strong>Phase de remontée</strong> : on reprend les bandes de <code class="notranslate">b</code> de la plus grande à la plus petite, et on insère chaque valeur dans <code class="notranslate">a</code> à la bonne position, en choisissant à chaque fois l’élément le moins coûteux à déplacer.</li>
+</ol>
+<p>Le tout repose sur une <strong>normalisation préalable</strong> : les valeurs réelles sont remplacées par leurs rangs <code class="notranslate">0 … n-1</code>.</p>
+<hr>
+<h2>1. Sélection de la stratégie</h2>
+<p>Avec <code class="notranslate">--medium</code>, <code class="notranslate">parsing.c</code> positionne <code class="notranslate">opts-&gt;strategy = STRAT_MEDIUM</code> (lignes 19 et 39-40).</p>
+<p>En mode adaptatif, <code class="notranslate">resolve_strategy</code> choisit medium quand le désordre est compris entre <code class="notranslate">0.2</code> et <code class="notranslate">0.5</code> :</p>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-k">if</span> (<span class="pl-s1">disorder</span> <span class="pl-c1">&lt;</span> <span class="pl-c1">0.2</span>)
+    <span class="pl-k">return</span> (<span class="pl-c1">STRAT_SIMPLE</span>);
+<span class="pl-k">if</span> (<span class="pl-s1">disorder</span> <span class="pl-c1">&lt;</span> <span class="pl-c1">0.5</span>)
+    <span class="pl-k">return</span> (<span class="pl-c1">STRAT_MEDIUM</span>);
+<span class="pl-k">return</span> (<span class="pl-c1">STRAT_COMPLEX</span>);</pre></div>
+<p>Puis <code class="notranslate">sort_stacks</code> appelle <code class="notranslate">sort_medium(a, b)</code> (<code class="notranslate">sort_dispatcher.c:32-33</code>).</p>
+<p>À noter : <code class="notranslate">main</code> ne lance le tri que si <code class="notranslate">disorder &gt; 0.0</code>. Un tableau déjà trié ne produit donc aucune opération, même avec <code class="notranslate">--medium</code>.</p>
+<hr>
+<h2>2. Prétraitement : normalisation des valeurs</h2>
+<p><code class="notranslate">sort_medium</code> commence par :</p>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-s1">geom</span>.<span class="pl-c1">n</span> <span class="pl-c1">=</span> <span class="pl-s1">a</span><span class="pl-c1">-&gt;</span><span class="pl-c1">size</span>;
+<span class="pl-k">if</span> (!<span class="pl-en">normalize_stack</span>(<span class="pl-s1">a</span>))
+{
+    <span class="pl-en">sort_simple</span>(<span class="pl-s1">a</span>, <span class="pl-s1">b</span>);
+    <span class="pl-k">return</span> ;
+}</pre></div>
+<p><code class="notranslate">normalize_stack</code> est dans <code class="notranslate">complex_presort.c:15</code> :</p>
+<ol>
+<li><code class="notranslate">build_sorted_copy(a)</code> copie le tableau puis le trie par <strong>tri par insertion</strong> ;</li>
+<li>pour chaque valeur de <code class="notranslate">a</code>, <code class="notranslate">find_rank</code> fait une <strong>recherche binaire</strong> dans la copie triée et renvoie son rang ;</li>
+<li>la valeur d’origine est remplacée par ce rang.</li>
+</ol>
+<p>Exemple :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">valeurs : 42  -7  100  3
+rangs   :  2   0    3  1
+</code></pre>
+<p>Pourquoi normaliser ?</p>
+<ul>
+<li>Les frontières des seaux deviennent indépendantes de l’amplitude réelle des valeurs.</li>
+<li>On travaille uniquement sur <code class="notranslate">0 … n-1</code>.</li>
+<li>Les comparaisons de bandes sont simples : <code class="notranslate">valeur &lt; chunk * chunk_size</code>.</li>
+</ul>
+<p>Coût : le tri par insertion de la copie est <code class="notranslate">O(n²)</code> dans le pire cas, avec <code class="notranslate">O(n)</code> mémoire temporaire. En cas d’échec d’allocation, le code retombe sur <code class="notranslate">sort_simple</code>.</p>
+<hr>
+<h2>3. Calcul de la géométrie</h2>
+<p>Toujours dans <code class="notranslate">sort_medium.c</code> :</p>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-s1">geom</span>.<span class="pl-c1">div</span> <span class="pl-c1">=</span> <span class="pl-en">floor_sqrt</span>(<span class="pl-s1">geom</span>.<span class="pl-c1">n</span>) / <span class="pl-c1">4</span>;
+<span class="pl-k">if</span> (<span class="pl-s1">geom</span>.<span class="pl-c1">div</span> <span class="pl-c1">&lt;</span> <span class="pl-c1">2</span>)
+    <span class="pl-s1">geom</span>.<span class="pl-c1">div</span> <span class="pl-c1">=</span> <span class="pl-c1">2</span>;
+<span class="pl-s1">geom</span>.<span class="pl-c1">fr</span> <span class="pl-c1">=</span> <span class="pl-c1">1</span>;</pre></div>
+<p>Donc :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">div        = max(2, floor(sqrt(n)) / 4)
+chunk_size = n / div          (division entière, minimum 1)
+fr         = 1
+</code></pre>
+<p><code class="notranslate">floor_sqrt</code> calcule la racine carrée entière sans <code class="notranslate">sqrt()</code> ni flottants, en évitant les débordements grâce à la division :</p>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-k">while</span> ((<span class="pl-s1">root</span> <span class="pl-c1">+</span> <span class="pl-c1">1</span>) &lt;= <span class="pl-s1">n</span> / (<span class="pl-s1">root</span> <span class="pl-c1">+</span> <span class="pl-c1">1</span>))
+    <span class="pl-s1">root</span><span class="pl-c1">++</span>;</pre></div>
+<p>Quelques exemples :</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th align="right"><code class="notranslate">n</code></th>
+<th align="right"><code class="notranslate">floor(sqrt(n))</code></th>
+<th align="right"><code class="notranslate">div</code></th>
+<th align="right"><code class="notranslate">chunk_size</code></th>
+<th align="right">Nombre approximatif de bandes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">10</td>
+<td align="right">3</td>
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">2</td>
+</tr>
+<tr>
+<td align="right">16</td>
+<td align="right">4</td>
+<td align="right">2</td>
+<td align="right">8</td>
+<td align="right">2</td>
+</tr>
+<tr>
+<td align="right">100</td>
+<td align="right">10</td>
+<td align="right">2</td>
+<td align="right">50</td>
+<td align="right">2</td>
+</tr>
+<tr>
+<td align="right">400</td>
+<td align="right">20</td>
+<td align="right">5</td>
+<td align="right">80</td>
+<td align="right">5</td>
+</tr>
+<tr>
+<td align="right">10 000</td>
+<td align="right">100</td>
+<td align="right">25</td>
+<td align="right">400</td>
+<td align="right">25</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>Le nombre de bandes est donc de l’ordre de <code class="notranslate">√n / 4</code>, et chaque bande contient environ <code class="notranslate">4√n</code> éléments. C’est bien la même classe asymptotique que <code class="notranslate">O(√n)</code> bandes, avec un facteur constant.</p>
+<p>Le <code class="notranslate">fr = 1</code> est important : il désactive le découpage supplémentaire utilisé par la stratégie complex. Medium traite chaque bande comme <strong>une seule plage</strong>.</p>
+<hr>
+<h2>4. Phase 1 : distribution de <code class="notranslate">a</code> vers <code class="notranslate">b</code></h2>
+<p>C’est <code class="notranslate">medium_chunks</code> (<code class="notranslate">sort_medium.c:25</code>) :</p>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-s1">size</span> <span class="pl-c1">=</span> <span class="pl-s1">a</span><span class="pl-c1">-&gt;</span><span class="pl-c1">size</span> / <span class="pl-s1">div</span>;
+<span class="pl-k">if</span> (<span class="pl-s1">size</span> <span class="pl-c1">&lt;</span> <span class="pl-c1">1</span>)
+    <span class="pl-s1">size</span> <span class="pl-c1">=</span> <span class="pl-c1">1</span>;
+
+<span class="pl-s1">chunk</span> <span class="pl-c1">=</span> <span class="pl-c1">1</span>;
+<span class="pl-k">while</span> (<span class="pl-s1">a</span><span class="pl-c1">-&gt;</span><span class="pl-c1">size</span> <span class="pl-c1">&gt;</span> <span class="pl-c1">0</span>)
+{
+    <span class="pl-s1">count</span> <span class="pl-c1">=</span> <span class="pl-s1">a</span><span class="pl-c1">-&gt;</span><span class="pl-c1">size</span>;
+    <span class="pl-s1">i</span> <span class="pl-c1">=</span> <span class="pl-c1">0</span>;
+    <span class="pl-k">while</span> (<span class="pl-s1">i</span> <span class="pl-c1">&lt;</span> <span class="pl-s1">count</span>)
+    {
+        <span class="pl-k">if</span> (<span class="pl-en">get_stack_element</span>(<span class="pl-s1">a</span>, <span class="pl-c1">0</span>) <span class="pl-c1">&lt;</span> <span class="pl-s1">chunk</span> <span class="pl-c1">*</span> <span class="pl-s1">size</span>)
+            <span class="pl-en">pb</span>(<span class="pl-s1">a</span>, <span class="pl-s1">b</span>);
+        <span class="pl-k">else</span>
+            <span class="pl-en">ra</span>(<span class="pl-s1">a</span>);
+        <span class="pl-s1">i</span><span class="pl-c1">++</span>;
+    }
+    <span class="pl-s1">chunk</span><span class="pl-c1">++</span>;
+}</pre></div>
+<h3>Principe</h3>
+<p>À chaque passe, on fixe une limite :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">limite = chunk * size
+</code></pre>
+<p>Puis on parcourt <strong>tous les éléments encore présents dans <code class="notranslate">a</code></strong> :</p>
+<ul>
+<li>si le sommet de <code class="notranslate">a</code> a un rang strictement inférieur à la limite, on le pousse dans <code class="notranslate">b</code> avec <code class="notranslate">pb</code> ;</li>
+<li>sinon, on le laisse dans <code class="notranslate">a</code> en le faisant tourner avec <code class="notranslate">ra</code>.</li>
+</ul>
+<p>La première passe prend donc les rangs <code class="notranslate">[0, size)</code>, la deuxième <code class="notranslate">[size, 2*size)</code>, etc.</p>
+<h3>Pourquoi <code class="notranslate">count = a-&gt;size</code> ?</h3>
+<p>C’est un point subtil mais essentiel.</p>
+<p><code class="notranslate">count</code> est capturé <strong>avant</strong> la passe. Même si <code class="notranslate">ra</code> réorganise la pile, la boucle fait exactement <code class="notranslate">count</code> itérations. Chaque élément présent au début de la passe est donc examiné exactement une fois.</p>
+<p>Sans ce <code class="notranslate">count</code>, le fait de faire tourner <code class="notranslate">a</code> pourrait faire examiner plusieurs fois les mêmes éléments ou en oublier.</p>
+<h3>Empilement dans <code class="notranslate">b</code></h3>
+<p><code class="notranslate">pb</code> place l’élément au <strong>sommet</strong> de <code class="notranslate">b</code>.</p>
+<p>Donc :</p>
+<ul>
+<li>la première bande poussée, la plus petite, se retrouve au fond de <code class="notranslate">b</code> ;</li>
+<li>la bande suivante est poussée au-dessus ;</li>
+<li>la dernière bande, la plus grande, se retrouve au sommet.</li>
+</ul>
+<p>Après la phase 1, <code class="notranslate">b</code> ressemble donc à :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">sommet de b
+  bande la plus grande
+  ...
+  bande intermédiaire
+  bande la plus petite
+fond de b
+</code></pre>
+<p>Chaque bande est contiguë dans <code class="notranslate">b</code>, mais <strong>l’ordre interne d’une bande n’est pas trié</strong> : il dépend de l’ordre de scan et des rotations.</p>
+<h3>Exemple avec <code class="notranslate">n = 13</code></h3>
+<pre lang="text" class="notranslate"><code class="notranslate">sqrt(13) = 3
+div = max(2, 3/4) = 2
+chunk_size = 13/2 = 6
+</code></pre>
+<p>Les passes utilisent les limites :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">passe 1 : v &lt; 6    -&gt; rangs 0..5
+passe 2 : v &lt; 12   -&gt; rangs 6..11
+passe 3 : v &lt; 18   -&gt; rang 12
+</code></pre>
+<p>On obtient trois bandes :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">[0,6)  [6,12)  [12,13)
+</code></pre>
+<p>Dans <code class="notranslate">b</code>, du sommet vers le fond :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">[12]  puis  [6..11]  puis  [0..5]
+</code></pre>
+<h3>Coût de la phase 1</h3>
+<p>Chaque passe parcourt au plus <code class="notranslate">a-&gt;size</code> éléments. Il y a environ <code class="notranslate">n / chunk_size = div ≈ √n/4</code> passes.</p>
+<p>Donc :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">O(n) par passe × O(√n) passes = O(n√n)
+</code></pre>
+<p>Les <code class="notranslate">pb</code> sont au total exactement <code class="notranslate">n</code>, puisqu’on vide entièrement <code class="notranslate">a</code>.</p>
+<hr>
+<h2>5. Phase 2 : remontée de <code class="notranslate">b</code> vers <code class="notranslate">a</code></h2>
+<p><code class="notranslate">sort_medium</code> appelle ensuite :</p>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-en">complex_pull</span>(<span class="pl-s1">a</span>, <span class="pl-s1">b</span>, <span class="pl-c1">&amp;</span><span class="pl-s1">geom</span>);</pre></div>
+<p>avec <code class="notranslate">geom.fr = 1</code>. C’est le même code que la stratégie complex, mais avec un comportement simplifié.</p>
+<h3>La boucle de <code class="notranslate">complex_pull</code></h3>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-s1">chunk_size</span> <span class="pl-c1">=</span> <span class="pl-s1">geom</span><span class="pl-c1">-&gt;</span><span class="pl-c1">n</span> / <span class="pl-s1">geom</span><span class="pl-c1">-&gt;</span><span class="pl-c1">div</span>;
+<span class="pl-s1">chunk</span> <span class="pl-c1">=</span> <span class="pl-s1">geom</span><span class="pl-c1">-&gt;</span><span class="pl-c1">div</span>;
+<span class="pl-k">while</span> (<span class="pl-s1">chunk</span> &gt;= <span class="pl-c1">0</span>)
+{
+    <span class="pl-s1">base</span> <span class="pl-c1">=</span> <span class="pl-s1">chunk</span> <span class="pl-c1">*</span> <span class="pl-s1">chunk_size</span>;
+    <span class="pl-s1">mid</span> <span class="pl-c1">=</span> <span class="pl-s1">base</span> <span class="pl-c1">+</span> <span class="pl-s1">chunk_size</span> / <span class="pl-s1">geom</span><span class="pl-c1">-&gt;</span><span class="pl-c1">fr</span>;
+
+    <span class="pl-s1">range</span>.<span class="pl-c1">low</span> <span class="pl-c1">=</span> <span class="pl-s1">mid</span>;
+    <span class="pl-s1">range</span>.<span class="pl-c1">high</span> <span class="pl-c1">=</span> <span class="pl-s1">base</span> <span class="pl-c1">+</span> <span class="pl-s1">chunk_size</span>;
+    <span class="pl-en">pull_range</span>(<span class="pl-s1">a</span>, <span class="pl-s1">b</span>, <span class="pl-c1">&amp;</span><span class="pl-s1">range</span>);
+
+    <span class="pl-s1">range</span>.<span class="pl-c1">low</span> <span class="pl-c1">=</span> <span class="pl-s1">base</span>;
+    <span class="pl-s1">range</span>.<span class="pl-c1">high</span> <span class="pl-c1">=</span> <span class="pl-s1">mid</span>;
+    <span class="pl-en">pull_range</span>(<span class="pl-s1">a</span>, <span class="pl-s1">b</span>, <span class="pl-c1">&amp;</span><span class="pl-s1">range</span>);
+
+    <span class="pl-s1">chunk</span><span class="pl-c1">--</span>;
+}
+<span class="pl-en">complex_align</span>(<span class="pl-s1">a</span>);</pre></div>
+<p>Avec <code class="notranslate">fr = 1</code> :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">mid = base + chunk_size
+</code></pre>
+<p>Donc le premier <code class="notranslate">pull_range</code> est :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">[base + chunk_size, base + chunk_size)
+</code></pre>
+<p>C’est une plage <strong>vide</strong>, il ne fait rien.</p>
+<p>Le second <code class="notranslate">pull_range</code> est :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">[base, base + chunk_size)
+</code></pre>
+<p>C’est la bande complète.</p>
+<p>Medium traite donc <strong>une bande entière à la fois</strong>, de la plus grande vers la plus petite :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">chunk = div   -&gt; bande du haut, éventuellement partielle
+chunk = div-1 -&gt; bande suivante
+...
+chunk = 0     -&gt; plus petite bande
+</code></pre>
+<p>Le <code class="notranslate">chunk = div</code> peut correspondre à une bande vide lorsque <code class="notranslate">n</code> est divisible par <code class="notranslate">div</code>, ou à la bande partielle du haut sinon. Dans les deux cas, les plages restent alignées avec celles de <code class="notranslate">medium_chunks</code>.</p>
+<h3><code class="notranslate">pull_range</code></h3>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-k">static</span> <span class="pl-smi">void</span> <span class="pl-en">pull_range</span>(<span class="pl-smi">t_stack</span> <span class="pl-c1">*</span><span class="pl-s1">a</span>, <span class="pl-smi">t_stack</span> <span class="pl-c1">*</span><span class="pl-s1">b</span>, <span class="pl-smi">t_range</span> <span class="pl-c1">*</span><span class="pl-s1">range</span>)
+{
+    <span class="pl-smi">int</span> <span class="pl-s1">value</span>;
+
+    <span class="pl-k">while</span> (<span class="pl-en">best_in_range</span>(<span class="pl-s1">a</span>, <span class="pl-s1">b</span>, <span class="pl-s1">range</span>, <span class="pl-c1">&amp;</span><span class="pl-s1">value</span>))
+        <span class="pl-en">complex_insert</span>(<span class="pl-s1">a</span>, <span class="pl-s1">b</span>, <span class="pl-s1">value</span>);
+}</pre></div>
+<p>Tant qu’il reste dans <code class="notranslate">b</code> un élément dont le rang appartient à <code class="notranslate">[low, high)</code>, on en choisit un et on l’insère dans <code class="notranslate">a</code>.</p>
+<hr>
+<h2>6. Choix de l’élément à insérer : heuristique de coût</h2>
+<p><code class="notranslate">best_in_range</code> parcourt tous les éléments de <code class="notranslate">b</code>. Pour chaque élément dont la valeur est dans la plage, il calcule un score avec <code class="notranslate">candidate_score</code>, puis garde le plus petit score.</p>
+<h3><code class="notranslate">complex_target_index</code></h3>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-smi">int</span> <span class="pl-en">complex_target_index</span>(<span class="pl-smi">t_stack</span> <span class="pl-c1">*</span><span class="pl-s1">a</span>, <span class="pl-smi">int</span> <span class="pl-s1">value</span>)
+{
+    <span class="pl-s1">idx</span> <span class="pl-c1">=</span> <span class="pl-en">best_greater</span>(<span class="pl-s1">a</span>, <span class="pl-s1">value</span>);
+    <span class="pl-k">if</span> (<span class="pl-s1">idx</span> <span class="pl-c1">==</span> <span class="pl-c1">-1</span>)
+        <span class="pl-s1">idx</span> <span class="pl-c1">=</span> <span class="pl-en">complex_min_index</span>(<span class="pl-s1">a</span>);
+    <span class="pl-k">return</span> <span class="pl-s1">idx</span>;
+}</pre></div>
+<p><code class="notranslate">best_greater</code> renvoie l’index du <strong>plus petit élément de <code class="notranslate">a</code> strictement supérieur à <code class="notranslate">value</code></strong>.</p>
+<ul>
+<li>Si un tel élément existe, on insère <code class="notranslate">value</code> juste avant lui.</li>
+<li>Si <code class="notranslate">value</code> est plus grand que tout <code class="notranslate">a</code>, on renvoie l’index du minimum de <code class="notranslate">a</code>.</li>
+</ul>
+<p>Pourquoi le minimum dans ce second cas ? Parce que la pile est circulaire : insérer avant le minimum revient à insérer après le maximum, ce qui préserve l’ordre croissant circulaire.</p>
+<p>Si <code class="notranslate">a</code> est vide, <code class="notranslate">complex_min_index</code> renvoie <code class="notranslate">0</code> et le coût est nul.</p>
+<h3><code class="notranslate">get_cost</code></h3>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-smi">int</span> <span class="pl-en">get_cost</span>(<span class="pl-smi">int</span> <span class="pl-s1">index</span>, <span class="pl-smi">int</span> <span class="pl-s1">size</span>)
+{
+    <span class="pl-k">if</span> (<span class="pl-s1">size</span> &lt;= <span class="pl-c1">1</span>)
+        <span class="pl-k">return</span> (<span class="pl-c1">0</span>);
+    <span class="pl-k">if</span> (<span class="pl-s1">index</span> &lt;= <span class="pl-s1">size</span> / <span class="pl-c1">2</span>)
+        <span class="pl-k">return</span> (<span class="pl-s1">index</span>);
+    <span class="pl-k">return</span> (<span class="pl-s1">index</span> <span class="pl-c1">-</span> <span class="pl-s1">size</span>);
+}</pre></div>
+<p>Cela donne le nombre de rotations <strong>signé</strong> le plus court pour amener l’index au sommet :</p>
+<ul>
+<li>index dans la première moitié : coût positif, donc <code class="notranslate">ra</code> / <code class="notranslate">rb</code> ;</li>
+<li>index dans la seconde moitié : coût négatif, donc <code class="notranslate">rra</code> / <code class="notranslate">rrb</code>.</li>
+</ul>
+<p>Exemple pour <code class="notranslate">size = 4</code> :</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th align="right">index</th>
+<th align="right">coût</th>
+<th>opération</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">0</td>
+<td align="right">0</td>
+<td>aucune</td>
+</tr>
+<tr>
+<td align="right">1</td>
+<td align="right">+1</td>
+<td><code class="notranslate">ra</code> une fois</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="right">+2</td>
+<td><code class="notranslate">ra</code> deux fois</td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td align="right">-1</td>
+<td><code class="notranslate">rra</code> une fois</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3><code class="notranslate">complex_cost</code></h3>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-k">if</span> ((<span class="pl-s1">cost_a</span> <span class="pl-c1">&gt;</span> <span class="pl-c1">0</span> <span class="pl-c1">&amp;&amp;</span> <span class="pl-s1">cost_b</span> <span class="pl-c1">&gt;</span> <span class="pl-c1">0</span>) <span class="pl-c1">||</span> (<span class="pl-s1">cost_a</span> <span class="pl-c1">&lt;</span> <span class="pl-c1">0</span> <span class="pl-c1">&amp;&amp;</span> <span class="pl-s1">cost_b</span> <span class="pl-c1">&lt;</span> <span class="pl-c1">0</span>))
+{
+    <span class="pl-k">if</span> (<span class="pl-s1">abs_a</span> <span class="pl-c1">&gt;</span> <span class="pl-s1">abs_b</span>)
+        <span class="pl-k">return</span> (<span class="pl-s1">abs_a</span>);
+    <span class="pl-k">return</span> (<span class="pl-s1">abs_b</span>);
+}
+<span class="pl-k">return</span> (<span class="pl-s1">abs_a</span> <span class="pl-c1">+</span> <span class="pl-s1">abs_b</span>);</pre></div>
+<ul>
+<li>Si les deux rotations vont dans le <strong>même sens</strong>, on peut utiliser <code class="notranslate">rr</code> ou <code class="notranslate">rrr</code> pour les faire en même temps. Le coût est donc le maximum des deux valeurs absolues.</li>
+<li>Si elles vont dans des sens <strong>opposés</strong>, on ne peut pas les combiner : le coût est la somme.</li>
+</ul>
+<h3><code class="notranslate">complex_insert</code></h3>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-s1">cost_a</span> <span class="pl-c1">=</span> <span class="pl-en">get_cost</span>(<span class="pl-en">complex_target_index</span>(<span class="pl-s1">a</span>, <span class="pl-s1">value</span>), <span class="pl-s1">a</span><span class="pl-c1">-&gt;</span><span class="pl-c1">size</span>);
+<span class="pl-s1">cost_b</span> <span class="pl-c1">=</span> <span class="pl-en">get_cost</span>(<span class="pl-en">complex_find</span>(<span class="pl-s1">b</span>, <span class="pl-s1">value</span>), <span class="pl-s1">b</span><span class="pl-c1">-&gt;</span><span class="pl-c1">size</span>);
+<span class="pl-en">rotate_ab</span>(<span class="pl-s1">a</span>, <span class="pl-s1">b</span>, <span class="pl-s1">cost_a</span>, <span class="pl-s1">cost_b</span>);
+<span class="pl-en">pa</span>(<span class="pl-s1">a</span>, <span class="pl-s1">b</span>);</pre></div>
+<p><code class="notranslate">rotate_ab</code> :</p>
+<ul>
+<li>utilise <code class="notranslate">rr</code> tant que <code class="notranslate">cost_a &gt; 0</code> et <code class="notranslate">cost_b &gt; 0</code> ;</li>
+<li>utilise <code class="notranslate">rrr</code> tant que les deux sont négatifs ;</li>
+<li>termine les rotations restantes séparément avec <code class="notranslate">ra</code>/<code class="notranslate">rra</code> et <code class="notranslate">rb</code>/<code class="notranslate">rrb</code> ;</li>
+<li>puis <code class="notranslate">pa</code> amène la valeur de <code class="notranslate">b</code> vers <code class="notranslate">a</code>.</li>
+</ul>
+<hr>
+<h2>7. Pourquoi l’ordre reste correct</h2>
+<p>L’invariant est : <strong><code class="notranslate">a</code> reste triée au sens circulaire</strong>.</p>
+<p>Quand on insère <code class="notranslate">value</code> :</p>
+<ul>
+<li>on trouve son successeur dans <code class="notranslate">a</code> (le plus petit élément supérieur) ;</li>
+<li>on amène ce successeur au sommet ;</li>
+<li><code class="notranslate">pa</code> place <code class="notranslate">value</code> juste au-dessus de lui.</li>
+</ul>
+<p>Donc <code class="notranslate">value</code> s’insère exactement entre son prédécesseur et son successeur. L’ordre croissant circulaire est préservé.</p>
+<p>À la fin, <code class="notranslate">complex_align(a)</code> trouve l’index du minimum et le ramène au sommet avec <code class="notranslate">ra</code> ou <code class="notranslate">rra</code>. La pile <code class="notranslate">a</code> est alors triée de façon linéaire, du plus petit au plus grand.</p>
+<hr>
+<h2>8. Pourquoi traiter les bandes de la plus grande à la plus petite ?</h2>
+<p>Parce que cela localise les insertions.</p>
+<p>Quand on traite une bande <code class="notranslate">B</code>, toutes les valeurs déjà dans <code class="notranslate">a</code> proviennent :</p>
+<ul>
+<li>des bandes plus grandes, donc strictement supérieures à toutes les valeurs de <code class="notranslate">B</code> ;</li>
+<li>éventuellement des valeurs de <code class="notranslate">B</code> déjà insérées.</li>
+</ul>
+<p>Ainsi, les valeurs de <code class="notranslate">B</code> s’insèrent toutes dans la même zone de <code class="notranslate">a</code> : juste avant le bloc des bandes supérieures. Ce bloc courant grandit au fur et à mesure, mais sa taille reste au plus <code class="notranslate">chunk_size = O(√n)</code>.</p>
+<p>De même, dans <code class="notranslate">b</code>, les éléments de la bande courante sont encore proches du sommet : ils occupent au plus <code class="notranslate">chunk_size</code> positions, réparties entre le début et la fin de <code class="notranslate">b</code> après d’éventuelles rotations. Donc <code class="notranslate">get_cost</code> pour <code class="notranslate">b</code> reste lui aussi en <code class="notranslate">O(√n)</code>.</p>
+<p>C’est ce qui donne le <code class="notranslate">O(n√n)</code> en nombre d’opérations émises : chaque élément coûte <code class="notranslate">O(√n)</code> rotations maximum, et il y a <code class="notranslate">n</code> éléments.</p>
+<hr>
+<h2>9. Complexité réelle et nuance importante</h2>
+<h3>En opérations <code class="notranslate">push_swap</code></h3>
+<pre lang="text" class="notranslate"><code class="notranslate">Normalisation          : O(n²) à cause du tri par insertion de la copie
+Phase 1 (distribution) : O(n√n)
+Phase 2 (remontée)     : O(n√n)
+Mémoire                : O(n) pour les piles + O(n) pour la copie triée
+</code></pre>
+<p>La phase 1 est en <code class="notranslate">O(n√n)</code> car il y a environ <code class="notranslate">√n/4</code> passes de <code class="notranslate">O(n)</code>.</p>
+<p>La phase 2 est en <code class="notranslate">O(n√n)</code> car chaque élément est inséré avec au plus <code class="notranslate">O(√n)</code> rotations dans <code class="notranslate">a</code> et <code class="notranslate">O(√n)</code> dans <code class="notranslate">b</code>.</p>
+<h3>Nuance : les comparaisons internes</h3>
+<p><code class="notranslate">best_in_range</code> parcourt <strong>tout <code class="notranslate">b</code></strong> pour chaque élément inséré. Cela représente <code class="notranslate">O(n²)</code> comparaisons au total dans le pire cas.</p>
+<p>Mais ces comparaisons ne sont <strong>pas</strong> des opérations <code class="notranslate">push_swap</code> : elles ne produisent ni <code class="notranslate">ra</code>, ni <code class="notranslate">rb</code>, ni <code class="notranslate">pb</code>, ni <code class="notranslate">pa</code>. La complexité demandée par le sujet porte sur le nombre d’opérations émises, pas sur le temps CPU des comparaisons.</p>
+<p>Autrement dit :</p>
+<pre lang="text" class="notranslate"><code class="notranslate">opérations push_swap : O(n√n)
+comparaisons C       : O(n²)
+</code></pre>
+<h3>Le rôle de <code class="notranslate">fr = 1</code></h3>
+<p>Dans la stratégie complex, <code class="notranslate">fr</code> vaut <code class="notranslate">3</code> ou <code class="notranslate">4</code> et permet de découper chaque bande en deux sous-plages pour raffiner les insertions.</p>
+<p>Pour medium, <code class="notranslate">fr = 1</code> :</p>
+<ul>
+<li><code class="notranslate">mid</code> vaut <code class="notranslate">base + chunk_size</code> ;</li>
+<li>la première plage est vide ;</li>
+<li>la seconde plage est la bande entière.</li>
+</ul>
+<p>Medium est donc la version « une bande = une plage » de la remontée utilisée par complex.</p>
+<hr>
+<h2>10. Résumé pas à pas</h2>
+<p>Pour <code class="notranslate">n</code> valeurs :</p>
+<ol>
+<li>Remplacer chaque valeur par son rang <code class="notranslate">0 … n-1</code>.</li>
+<li>Calculer <code class="notranslate">div = max(2, floor(sqrt(n))/4)</code> et <code class="notranslate">chunk_size = n/div</code>.</li>
+<li>Répéter pour <code class="notranslate">chunk = 1, 2, 3, …</code> :
+<ul>
+<li>parcourir les <code class="notranslate">a-&gt;size</code> éléments restants ;</li>
+<li>pousser dans <code class="notranslate">b</code> ceux dont le rang est <code class="notranslate">&lt; chunk * chunk_size</code> ;</li>
+<li>faire tourner les autres avec <code class="notranslate">ra</code>.</li>
+</ul>
+</li>
+<li>À la fin, <code class="notranslate">b</code> contient les bandes de la plus grande à la plus petite.</li>
+<li>Pour chaque bande, de la plus grande à la plus petite :
+<ul>
+<li>chercher dans <code class="notranslate">b</code> l’élément de la bande qui a le coût d’insertion minimal ;</li>
+<li>calculer sa position d’insertion dans <code class="notranslate">a</code> via son successeur ;</li>
+<li>faire les rotations <code class="notranslate">ra</code>/<code class="notranslate">rra</code>, <code class="notranslate">rb</code>/<code class="notranslate">rrb</code>, <code class="notranslate">rr</code>/<code class="notranslate">rrr</code> nécessaires ;</li>
+<li><code class="notranslate">pa</code> pour l’insérer.</li>
+</ul>
+</li>
+<li>Ramener le minimum de <code class="notranslate">a</code> au sommet avec <code class="notranslate">complex_align</code>.</li>
+</ol>
+<p>En une phrase : <strong>medium range les valeurs par tranches de rangs, les empile dans <code class="notranslate">b</code> dans l’ordre décroissant, puis les réinsère une par une dans <code class="notranslate">a</code> en choisissant à chaque fois la rotation la moins coûteuse.</strong></p></article>
+	</body>
+</html>
