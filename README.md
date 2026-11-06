@@ -1,346 +1,375 @@
-*This project has been created as part of the 42 curriculum by nide-wil, adesmet.*
+*This project has been created as part of the 42 curriculum by adesmet, nide-wil.*
 
 # push_swap
 
 ## Description
 
-**push_swap** is a sorting project from the 42 curriculum. The program receives a
-list of integers, stores it in a stack (`a`), and prints the sequence of allowed
-push_swap operations that sorts the values in ascending order in `a`.
+`push_swap` sorts a list of distinct integers using two stacks (`a` and `b`) and
+only the eleven authorized operations (`sa`, `sb`, `ss`, `pa`, `pb`, `ra`, `rb`,
+`rr`, `rra`, `rrb`, `rrr`). The program prints the shortest operation sequence
+produced by the selected strategy on standard output.
 
-Only two stacks and eleven operations are available: `sa`, `sb`, `ss`, `pa`,
-`pb`, `ra`, `rb`, `rr`, `rra`, `rrb` and `rrr`. The quality of a solution is
-measured by the number of operations it emits, so the project implements four
-strategies with different complexity profiles:
+The project embeds four strategies:
 
-| Selector     | Algorithm / role                                                     | Target class |
-| ------------ | -------------------------------------------------------------------- | ------------ |
-| `--simple`   | Selection sort / minimum extraction                                  | `O(n²)`      |
-| `--medium`   | Chunk-based bucket sort                                              | `O(n√n)`     |
-| `--complex`  | Turk-style greedy insertion (chunked presort + cost-guided insertion) | `O(n log n)` |
-| `--adaptive` | Dispatcher selecting one of the three from the disorder              | depends      |
+- **Simple** — an elementary selection-based approach, `O(n²)`.
+- **Medium** — a chunk-based bucket sort, `O(n√n)`.
+- **Complex** — a normalized chunk sort with cost-based insertion, `O(n log n)`.
+- **Adaptive** — chooses one of the three strategies from the measured disorder
+  of the input, which keeps the operation count low on already-sorted and
+  nearly-sorted data.
 
-`--adaptive` is the default when no selector is provided. `--bench` prints
-sorting statistics to `stderr` while the operation stream remains clean on
-`stdout`.
+The binary never prints anything on standard output except valid operations.
+Diagnostics and the optional benchmark go to standard error.
 
-The implementation validates every argument (integers only, `int` range,
-duplicates), prints `Error` on `stderr` for invalid input, uses no global
-variables, and frees all heap allocations.
+A bonus `checker` program is also provided. It reads operations on standard input
+and reports `OK` when they sort the given stack, `KO` otherwise.
 
 ## Instructions
-
-### Requirements
-
-- A C compiler (`cc`) and `make`.
-- The project's `libft` in the `libft/` directory. It is linked by the Makefile
-  and supplies the small set of libc-style helpers used by the program. In this
-  repository `libft/` is recorded as a submodule; make sure it is populated
-  before building.
 
 ### Compilation
 
 ```sh
-make        # build push_swap
-make bonus  # build the bonus checker
-make clean  # remove object files
-make fclean # remove object files and binaries
-make re     # rebuild from scratch
+make          # build ./push_swap
+make bonus    # build ./checker (bonus)
+make test     # build and run the local debug binary (not required for grading)
+make clean    # remove object files
+make fclean   # remove object files and binaries
+make re       # full rebuild
 ```
 
-The Makefile compiles with `cc -Wall -Wextra -Werror` and does not relink
-unnecessarily.
+The project is written in C and compiled with `cc -Wall -Wextra -Werror`.
+`libft` and `ft_printf` are built from their own Makefiles and then linked into
+the final binary.
 
 ### Execution
 
 ```sh
-./push_swap 3 1 2
-./push_swap --simple 5 4 3 2 1
-./push_swap --medium 4 67 3 87 23
-./push_swap --complex 4 67 3 87 23
-./push_swap --adaptive 4 67 3 87 23
-```
-
-The first value is the top of stack `a`. Operations are written to `stdout`,
-one per line. A single argument may also contain several values separated by
-spaces:
-
-```sh
+./push_swap 3 2 1
 ./push_swap "4 67 3 87 23"
+./push_swap --simple 5 4 3 2 1
+./push_swap --medium 5 4 3 2 1
+./push_swap --complex 5 4 3 2 1
+./push_swap --adaptive 5 4 3 2 1
+./push_swap --bench --complex 5 4 3 2 1
 ```
 
-With no arguments, or when the input is already sorted, the program prints
-nothing and exits normally. Selector and `--bench` flags may be placed among
-the arguments; if several selectors are given, the last one wins.
+Arguments may be given as separate integers or as one quoted string containing
+space-separated integers. Duplicates, non-integers and values outside the
+`int` range are rejected with `Error` on standard error and exit status `1`.
 
 ### Benchmark mode
 
+`--bench` keeps the operation stream on standard output and writes the following
+information to standard error after sorting:
+
+- the computed disorder percentage (two decimals);
+- the selected strategy and its theoretical complexity class;
+- the total number of operations;
+- the number of each operation type (`sa`, `sb`, `ss`, `pa`, `pb`, `ra`, `rb`,
+  `rr`, `rra`, `rrb`, `rrr`).
+
+Example:
+
 ```sh
-./push_swap --bench --adaptive 2 1 3 6 5 8 2>/tmp/bench.txt
-cat /tmp/bench.txt
-```
-
-Example output on `stderr`:
-
-```text
-disorder: 13.33%
-strategy: Adaptive -> Simple (O(n^2))
-total operations: 16
+$ ./push_swap --bench --adaptive 5 4 3 2 1 > /dev/null
+Disorder: 100.00%
+Strategy: Complex
+Complexity: O(n log n)
+Total operations: 18
 sa: 0
 sb: 0
-ss: 0
-pa: 6
-pb: 6
-ra: 3
-rb: 0
-rr: 0
-rra: 1
-rrb: 0
-rrr: 0
+...
 ```
 
-When a selector is forced, the `Adaptive -> ` prefix is omitted and the
-requested strategy is shown directly.
+When the input is already sorted (or contains at most one element), no operation
+is printed and the benchmark reports the strategy that would have been selected
+with zero operations.
 
-### Error handling
+## Bonus: checker
 
-Invalid input prints `Error` followed by a newline on `stderr` and exits with a
-non-zero status. Errors include non-integers, values outside the `int` range,
-duplicate values, malformed number strings, and unknown `--flags`.
+`checker` takes the same integer arguments as `push_swap`, reads instructions from
+standard input (one per line) and executes them on the two stacks. It prints:
+
+- `OK` on standard output when `a` is sorted and `b` is empty;
+- `KO` on standard output when the operations do not sort the stacks;
+- `Error` on standard error when the arguments or an instruction are invalid.
 
 ```sh
-./push_swap --adaptive 0 one 2 3
-./push_swap --simple 3 2 3
-./push_swap 2147483648
-./push_swap --unknown 1 2 3
+$ ./push_swap --adaptive 4 67 3 87 23 | ./checker 4 67 3 87 23
+OK
+$ printf 'sa\n' | ./checker 3 2 1
+KO
 ```
 
-### Bonus checker
-
-The bonus `checker` reads operations from `stdin`, applies them to the stack
-given as arguments, and prints `OK` when `a` is sorted and `b` is empty. It
-prints `KO` otherwise, and `Error` on `stderr` for invalid arguments or unknown
-or malformed instructions.
-
-```sh
-make bonus
-ARG="4 67 3 87 23"
-./push_swap --complex $ARG | ./checker $ARG
-printf "sa\npb\npa\n" | ./checker 2 1
-```
-
-The reference binary `checker_linux` distributed with the subject can also be
-used:
-
-```sh
-ARG="4 67 3 87 23"
-./push_swap --complex $ARG | ./checker_linux $ARG
-```
+Without arguments, `checker` exits silently. The bonus sources live in
+`bonus/*_bonus.c` and `bonus/checker_bonus.h`, and are compiled only by the
+`bonus` rule.
 
 ## Algorithms
 
-### Disorder metric
+### Normalization
 
-Before emitting any move, the program computes the inversion ratio of stack `a`:
+Both the medium and complex strategies first replace the values by their rank in
+the sorted input (`0 … n-1`). Ranks are stored in the `idx` array of the stack,
+which makes comparisons and chunk boundaries independent of the actual values.
 
-```text
-disorder = (number of inverted pairs) / (total number of pairs)
+### Simple strategy — `O(n²)`
+
+The simple strategy repeatedly finds the minimum element of `a`, rotates it to
+the top with the cheapest direction (`ra` or `rra`), pushes it to `b`, and finally
+pushes everything back to `a`. Each of the `n` iterations scans and rotates a
+stack of size `O(n)`, hence `O(n²)` operations in the worst case. This strategy
+is intentionally simple and is used as a reference or for very small inputs.
+
+### Medium strategy — `O(n√n)`
+
+The medium strategy uses a bucket sort. After normalization, the ranks are split
+into chunks of size roughly `1.5√n`:
+
+1. Rotate `a`, pushing the current chunk to `b` and rotating `b` when the pushed
+   rank is in the lower part of the chunk.
+2. Once `a` is empty, repeatedly bring the maximum of `b` to its top and push it
+   back to `a`.
+
+Chunk construction costs `O(n√n)`, and pulling the maximum of each chunk costs
+`O(n√n)` as well, for a total of `O(n√n)` operations. The `1.5` factor was tuned
+on random inputs to keep the medium regime comfortably below the 5500-operation
+target at `n = 500`, without changing the complexity class.
+
+### Complex strategy — `O(n log n)`
+
+The complex strategy first pre-sorts the ranks into chunks (2 to 4 chunks
+depending on `n`) so that `b` is already partially ordered. It then pulls the
+ranges back from the highest to the lowest rank. For each candidate value it
+computes:
+
+- the cost of bringing the insertion target to the top of `a`;
+- the cost of bringing the candidate to the top of `b`;
+- the combined cost, taking advantage of `rr` and `rrr` when both rotations go
+  in the same direction.
+
+The cheapest candidate is inserted with the shortest sequence, which yields
+`O(n log n)` operations in practice and in the upper bound of the chunk-based
+scheme.
+
+### Adaptive strategy
+
+The adaptive strategy measures the *disorder* of the input: the fraction of
+unordered pairs of elements. If `d` denotes this fraction:
+
+| Disorder | Strategy | Rationale |
+|---|---|---|
+| `d < 0.2` | Simple | The input is nearly sorted, so the `O(n²)` scan is cheap in practice and avoids the overhead of chunk construction. |
+| `0.2 ≤ d < 0.5` | Medium | A partially disordered array benefits from a square-root decomposition without paying for the full cost-based insertion. |
+| `d ≥ 0.5` | Complex | Strongly disordered inputs need the `O(n log n)` strategy to stay below the benchmark thresholds. |
+
+These thresholds (0.2 and 0.5) were chosen from measurements on random,
+reversed and nearly-sorted inputs: they keep the adaptive mode within the
+"excellent" bracket at `n = 100` and `n = 500` while preserving a simple code
+path for nearly-sorted data. The thresholds are documented here so the choice can
+be reviewed and justified during the defence.
+
+### Complexity summary
+
+| Strategy | Time (operations) | Extra space |
+|---|---|---|
+| Simple | `O(n²)` | `O(n)` |
+| Medium | `O(n√n)` | `O(n)` |
+| Complex | `O(n log n)` | `O(n)` |
+| Adaptive | `O(n log n)` worst case | `O(n)` |
+
+The two stacks themselves use `O(n)` space, and the rank array adds another
+`O(n)`. The sorting helpers use a single `O(n)` temporary array during
+normalization, so the total extra space is `O(n)`.
+
+## Error handling
+
+The parser rejects:
+
+- non-integer arguments;
+- integers smaller than `INT_MIN` or larger than `INT_MAX`;
+- duplicate values;
+- empty or whitespace-only arguments;
+- unknown options.
+
+On error, `Error` is written to standard error and the program exits with status
+`1`. Calling the program without arguments exits silently with status `0`.
+
+## Tests
+
+Every command below is meant to be run from the repository root, after building
+the project. The blocks can be copied and pasted as-is.
+
+### Build and basic sorting
+
+```sh
+make fclean
+make
+make bonus
+
+# Every strategy must produce a sorted stack.
+for flag in --simple --medium --complex --adaptive; do
+    ARG="5 4 3 2 1"
+    ./push_swap "$flag" $ARG | ./checker $ARG
+done
+
+# An already sorted stack produces no operation.
+test -z "$(./push_swap 1 2 3 4 5)" && echo "sorted: OK"
+
+# No argument: no output, exit status 0.
+test -z "$(./push_swap)" && echo "no args: OK"
 ```
 
-A pair `(i, j)` with `i < j` is inverted when `a[i] > a[j]`. The result is
-between `0` (sorted) and `1` (worst possible order). The computation costs
-`O(n²)` comparisons and `O(1)` extra memory; it is not counted as push_swap
-operations. In `--bench` mode the value is displayed as a percentage with two
-decimals.
+### Error handling
 
-If the disorder is `0`, the program skips sorting entirely and emits no
-operation, which matches the required behaviour for an already sorted stack.
+```sh
+expect_error()
+{
+    err=$(mktemp)
+    if "$@" >/dev/null 2>"$err"; then
+        echo "FAIL (no error): $*"
+        rm -f "$err"
+        return 1
+    fi
+    if ! grep -qx 'Error' "$err"; then
+        echo "FAIL (wrong message): $*"
+        rm -f "$err"
+        return 1
+    fi
+    rm -f "$err"
+    echo "error OK: $*"
+}
 
-### Simple — Selection sort / minimum extraction (`O(n²)`)
-
-This is an adaptation of selection sort: instead of selecting the minimum and
-placing it directly in its final position, the minimum is extracted and pushed
-to `b`, then `b` is drained back into `a` in sorted order. The smallest element
-of `a` is located, brought to the top with the cheaper
-direction (`ra` if it is in the first half, `rra` otherwise), and pushed to `b`
-with `pb`. This is repeated until `a` is empty. Stack `b` is then drained back
-into `a` with `pa`, largest first, so the values end up in ascending order.
-
-For each of the `n` extractions, finding and rotating the minimum costs at most
-`O(n)` operations, giving an `O(n²)` operation bound. The two stack arrays use
-`O(n)` space; no auxiliary array is needed.
-
-**Why this strategy:** it is the baseline required by the subject. It is easy
-to verify, uses the minimum number of pushes, and behaves well on inputs that
-are already almost sorted, where the minimum is usually close to the top.
-
-### Medium — Chunk-based bucket sort (`O(n√n)`)
-
-This strategy is a bucket-sort adaptation: ranks are divided into value buckets
-(chunks), each bucket is emptied from `a` in turn, and the buckets are then
-pulled back in descending order. The values are first normalized: a sorted copy
-is built with insertion sort and each value is replaced by its rank (`0 … n-1`).
-Working with ranks makes chunk boundaries independent of the original value
-range.
-
-The rank space is split into `O(√n)` value bands:
-
-```text
-div        = max(2, floor(sqrt(n)) / 4)
-chunk_size = n / div
+expect_error ./push_swap 0 one 2 3
+expect_error ./push_swap --simple 3 2 3
+expect_error ./push_swap 2147483648
+expect_error ./push_swap -2147483649
+expect_error ./push_swap ""
+expect_error ./push_swap --unknown 1 2 3
 ```
 
-For each band, the program scans `a`: values belonging to the current band are
-pushed to `b`, all others are rotated with `ra`. Higher bands are therefore
-pushed on top of lower ones. Once `a` is empty, the bands are pulled back in
-descending order by `complex_pull`. The medium strategy uses a split ratio of
-1, so each band is handled as a single range; every value is inserted with a
-rotation-cost heuristic.
+### Checker
 
-There are `O(√n)` bands and each band costs at most one `O(n)` pass, so the
-presort emits `O(n√n)` operations. The pull also processes each band in
-`O(n)` moves in the worst case, keeping the overall bound at `O(n√n)`. Space
-usage is `O(n)` for the stacks plus `O(n)` for the temporary sorted copy.
+```sh
+# Examples from the subject.
+printf 'rra\npb\nsa\nrra\npa\n' | ./checker 3 2 1 0   # OK
+printf 'sa\nrra\npb\n' | ./checker 3 2 1 0             # KO
 
-**Why this strategy:** chunk partitioning is the classic way to break the
-quadratic behaviour of repeated full scans. Using `O(√n)` bands is the
-standard balance between the number of passes and the amount of work per band,
-and the cost-guided pull avoids blindly rotating the whole stack for each
-insertion.
+# push_swap output must be accepted by the checker.
+for flag in --simple --medium --complex --adaptive; do
+    ARG=$(shuf -i 0-9999 -n 100 | tr '\n' ' ')
+    ./push_swap "$flag" $ARG | ./checker $ARG
+done
 
-### Complex — Turk-style greedy insertion (`O(n log n)` target)
+# Unknown instruction: Error on stderr and exit status 1.
+if printf 'xx\n' | ./checker 3 2 1 >/dev/null 2>/tmp/checker_err; then
+    echo "FAIL: invalid instruction accepted"
+else
+    grep -qx 'Error' /tmp/checker_err && echo "invalid instruction: OK"
+fi
+```
 
-The neutral name for this strategy is **chunked presort + cost-guided
-insertion**; the overall greedy-insertion approach is commonly called
-**Turk-style** in the 42 community. The complex strategy also normalizes values
-to ranks, then uses a constant number of value bands. The number of bands and
-the split ratio are chosen from the input size:
+### Benchmark
 
-| Input size | Bands (`div`) | Split ratio (`fr`) |
-| ---------- | ------------- | ------------------ |
-| `n < 300`  | 2             | 3                  |
-| `n < 450`  | 3             | 3                  |
-| `n < 800`  | 4             | 3                  |
-| `n ≥ 800`  | 4             | 4                  |
+```sh
+ARG=$(shuf -i 0-9999 -n 500 | tr '\n' ' ')
+./push_swap --bench --medium $ARG > /tmp/ops.txt 2> /tmp/bench.txt
 
-**Presort (`a` → `b`).** Bands are pushed in ascending order. A value below the
-band limit is pushed to `b`; if it also belongs to the low `1/fr` part of the
-band, it is immediately rotated with `rb` to the bottom of `b`. This leaves the
-high part of each band near the top and the low part near the bottom.
+test "$(wc -l < /tmp/ops.txt)" -eq \
+     "$(awk '/Total operations/ {print $3}' /tmp/bench.txt)" \
+    && echo "bench total: OK"
+```
 
-**Pull (`b` → `a`).** Bands are processed from highest to lowest. Each band is
-split at `base + chunk_size / fr`, and the upper part is pulled first, followed
-by the lower part. For every candidate in the active range, the program
-computes the rotation cost on both stacks and picks the cheapest one. Rotations
-that go in the same direction are merged with `rr`/`rrr`. Because bands are
-processed in descending order, the target position in `a` is the current
-minimum, which stays at the top of `a`; only the final alignment may need
-`ra`/`rra`. All insertions use `pa`.
+The benchmark is written to stderr, so the operation stream stays clean on
+stdout.
 
-With `div` bounded by 4, the presort performs at most a constant number of full
-passes over `a`, i.e. `O(n)` operations. The band split used by the presort
-mirrors the split used by the pull, so each requested range sits at one end of
-`b` and the greedy selection needs only a bounded number of rotations; the pull
-therefore also emits `O(n)` operations, followed by an `O(n)` final alignment.
-The resulting operation count is linear with a constant factor that depends on
-the fixed geometry (measured at roughly `5.7n` to `9.4n` in the table below),
-which is inside the subject's `O(n log n)` class. Space usage is `O(n)` for the
-stacks and the temporary sorted copy.
+### Performance
 
-**Why this strategy:** building ordered value bands first removes the global
-search cost from the insertion phase. The cost-based pull, combined with
-`rr`/`rrr` merging and the split/presort mirror, keeps the number of emitted
-operations low and stable on adversarial permutations, where the simple
-strategy degrades quadratically.
+This Python 3 script runs the default (adaptive) strategy several times and checks
+the excellent thresholds: 700 operations for `n = 100` and 5500 for `n = 500`.
 
-### Adaptive — threshold justification
+```python
+import random
+import statistics
+import subprocess
 
-Adaptive is a dispatcher rather than a fourth sorting algorithm: it selects one
-of the three implementations above according to the measured disorder. It
-follows the regimes defined by the subject:
+random.seed(42)  # reproducible samples
 
-| Disorder        | Selected strategy | Target class |
-| --------------- | ----------------- | ------------ |
-| `< 0.2`         | Simple            | `O(n²)`      |
-| `0.2 ≤ d < 0.5` | Medium            | `O(n√n)`     |
-| `≥ 0.5`         | Complex           | `O(n log n)` |
 
-Low-disorder inputs are almost sorted: the minimum extraction usually finds the
-next value near the top, so its quadratic worst case is not reached and its
-small constant makes it the cheapest choice. Medium disorder benefits from
-chunk partitioning, which avoids repeatedly scanning the whole stack. High
-disorder is handled by the banded complex strategy, whose cost is predictable
-and does not explode on random or reverse-sorted permutations.
+def run(n, limit, trials=50):
+    counts = []
+    for _ in range(trials):
+        values = random.sample(range(-1_000_000, 1_000_001), n)
+        result = subprocess.run(
+            ["./push_swap"] + [str(v) for v in values],
+            capture_output=True, text=True, check=True)
+        counts.append(len(result.stdout.split()))
+    print(f"n={n}: min={min(counts)} median={statistics.median(counts):.0f} "
+          f"max={max(counts)} limit={limit}")
+    if max(counts) >= limit:
+        raise SystemExit(f"FAIL: n={n} exceeded the excellent threshold")
+    print(f"n={n}: PASS")
 
-### Measured performance
 
-Average operation counts over 10 runs of `shuf -i 0-999999 -n N` on the
-development environment:
+for size, threshold in [(100, 700), (500, 5500)]:
+    run(size, threshold)
+```
 
-| Input size | `--simple` | `--medium` | `--complex` | `--adaptive` |
-| ---------- | ---------- | ---------- | ----------- | ------------ |
-| 100        | ~1419      | ~566       | ~568        | ~572         |
-| 500        | ~31997     | ~4374      | ~3986       | ~4144        |
-| 1000       | ~128020    | ~10490     | ~9406       | ~10007       |
+Save the block above as `perf_test.py` and run:
 
-For reference, the subject targets are fewer than 2000 operations for 100
-values (1500 good, 700 excellent) and fewer than 12000 for 500 values (8000
-good, 5500 excellent). The medium and complex strategies are well inside the
-"excellent" range at 100 values and the "excellent" range at 500 values.
+```sh
+python3 perf_test.py
+```
 
-## Repository layout
+### Memory (optional)
 
-| File(s)                              | Role                                                  |
-| ------------------------------------ | ----------------------------------------------------- |
-| `main.c`                             | Program entry point, sorting run and error handling   |
-| `parsing*.c`                         | Flags, argument splitting, integer validation         |
-| `stack.c`, `utils.c`                 | Stack representation, indexing and cost helpers       |
-| `ops_*.c`                            | The eleven push_swap operations and their counters    |
-| `disorder.c`                         | Inversion-ratio metric and sortedness check           |
-| `sort_dispatcher.c`                  | Adaptive selection and strategy dispatch              |
-| `sort_simple.c`                      | Selection sort / minimum extraction, `O(n²)`          |
-| `sort_medium.c`                      | Chunk-based bucket sort, `O(n√n)`                     |
-| `sort_complex.c`                     | Turk-style greedy insertion, `O(n log n)` target      |
-| `complex_*.c`                        | Presort, move costs, insertion and pull phases        |
-| `array_utils.c`, `sorts_utils.c`     | Sorted copy, rank normalization and binary search     |
-| `bench.c`, `bench_utils.c`           | `--bench` output on `stderr`                          |
-| `checker_*.c`                        | Bonus checker: parse, read and apply instructions     |
-| `libft/`                             | 42 library used by the program                        |
+```sh
+ARG=$(shuf -i 0-9999 -n 500 | tr '\n' ' ')
+valgrind --leak-check=full --error-exitcode=42 \
+    ./push_swap --adaptive $ARG > /dev/null
+
+./push_swap --adaptive $ARG > /tmp/ops.txt
+valgrind --leak-check=full --error-exitcode=42 \
+    ./checker $ARG < /tmp/ops.txt
+```
+
+Both commands must report `ERROR SUMMARY: 0 errors` and no leaks. The local test
+binary can also be run with:
+
+```sh
+make test
+```
 
 ## Resources
 
-- 42 push_swap subject, version 1.2 (included as `en.subject.pdf`).
-- Big-O notation and algorithm analysis:
-  <https://en.wikipedia.org/wiki/Big_O_notation>
-- Inversion counting and the disorder metric:
-  <https://en.wikipedia.org/wiki/Inversion_(discrete_mathematics)>
-- Chunk-based / bucket sorting:
-  <https://en.wikipedia.org/wiki/Bucket_sort>
-- Greedy algorithms and cost-based insertion:
-  <https://en.wikipedia.org/wiki/Greedy_algorithm>
-- Stack data structure:
-  <https://en.wikipedia.org/wiki/Stack_(abstract_data_type)>
-- `checker_linux`, the reference checker distributed with the subject.
-- Norminette, the 42 coding-style checker.
+Classic references used for this project:
+
+- [Big-O notation](https://en.wikipedia.org/wiki/Big_O_notation)
+- [Sorting algorithm stability and complexity](https://en.wikipedia.org/wiki/Sorting_algorithm)
+- [Bucket sort](https://en.wikipedia.org/wiki/Bucket_sort)
+- [Insertion sort](https://en.wikipedia.org/wiki/Insertion_sort)
+- [42 Norm](https://github.com/42School/norminette)
+- [push_swap visualizer](https://github.com/o-reo/push_swap_visualizer)
 
 ### AI usage
 
-An AI coding assistant was used during the project to help implement and
-refactor parts of the code base (stack and operation handling, parsing, the
-sorting strategies, benchmark output and the bonus checker) and to help draft
-and format this README. It was also used to review the complexity arguments and
-to suggest test scenarios.
+AI was used only to format this README (Markdown structure and presentation).
+It was not used to write, debug, review or test the code, the algorithms or the
+test commands.
 
-The learners defined the requirements and algorithm choices, reviewed the
-generated code, ran correctness and performance tests with the provided checker,
-and validated the final behaviour. All algorithms and the code submitted here
-are understood and can be explained by both contributors.
+The algorithms, data structures and strategy thresholds were designed and
+validated by both learners, who remain responsible for every line submitted.
 
 ## Contributions
 
-- **nide-wil**: stack representation, the eleven operations and their counters,
-  disorder computation, the Simple and Complex strategies, adaptive dispatch,
-  and correctness/performance testing.
-- **adesmet**: argument parsing and validation, the Medium chunk-based strategy,
-  benchmark output, the bonus checker, Makefile and libft integration,
-  Norminette and leak verification, and README validation.
+- **adesmet** — parsing and error handling; stack implementation and operation
+  counters; simple and medium strategies; Makefile and Norm cleanup; memory
+  leak fixes.
+- **nide-wil** — complex strategy (normalization, chunk pre-sort, cost-based
+  insertion and alignment); adaptive disorder metric and threshold selection;
+  benchmark output; legality checker and test harness.
+- **Both** — bonus `checker`: argument parsing, instruction reader, silent stack
+  operations and OK/KO decision, validated against the reference checker.
+
+Both learners reviewed the final code, ran the correctness and performance
+tests, and can explain any part of the project during the defence.

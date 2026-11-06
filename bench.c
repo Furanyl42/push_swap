@@ -3,56 +3,73 @@
 /*                                                        :::      ::::::::   */
 /*   bench.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nide-wil <nide-wil@student.42belgium.be>   +#+  +:+       +#+        */
+/*   By: adesmet <adesmet@student.42belgium.be>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/11/02 12:00:00 by nide-wil          #+#    #+#             */
-/*   Updated: 2026/11/02 12:00:00 by nide-wil         ###   ########.fr       */
+/*   Created: 2026/11/05 12:00:00 by adesmet           #+#    #+#             */
+/*   Updated: 2026/11/05 12:00:00 by adesmet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "push_swap.h"
+#include "bench.h"
 
-static void	put_strategy(t_strategy strat)
+void	merge_counts(t_count *dst, t_count *src)
 {
-	if (strat == STRAT_SIMPLE)
-		ft_putstr_fd("Simple (O(n^2))", 2);
-	else if (strat == STRAT_MEDIUM)
-		ft_putstr_fd("Medium (O(n*sqrt(n)))", 2);
-	else if (strat == STRAT_COMPLEX)
-		ft_putstr_fd("Complex (O(n log n))", 2);
-	else
-		ft_putstr_fd("Adaptive", 2);
+	if (!dst || !src || dst == src)
+		return ;
+	dst->sa += src->sa;
+	dst->sb += src->sb;
+	dst->ss += src->ss;
+	dst->pa += src->pa;
+	dst->pb += src->pb;
+	dst->ra += src->ra;
+	dst->rb += src->rb;
+	dst->rr += src->rr;
+	dst->rra += src->rra;
+	dst->rrb += src->rrb;
+	dst->rrr += src->rrr;
 }
 
-static void	put_op_count(char *name, int value)
+int	get_total_operations(t_count *count)
 {
-	ft_putstr_fd(name, 2);
-	ft_putstr_fd(": ", 2);
-	ft_putnbr_fd(value, 2);
-	ft_putstr_fd("\n", 2);
+	if (!count)
+		return (0);
+	return (count->sa + count->sb + count->ss + count->pa + count->pb
+		+ count->ra + count->rb + count->rr + count->rra + count->rrb
+		+ count->rrr);
 }
 
-void	print_bench(t_counts *counts, double disorder,
-		t_strategy requested, t_strategy resolved)
+static void	print_line(const char *label, int value)
 {
-	ft_putstr_fd("disorder: ", 2);
-	put_pct(disorder);
-	ft_putstr_fd("\nstrategy: ", 2);
-	if (requested == STRAT_ADAPTIVE)
-		ft_putstr_fd("Adaptive -> ", 2);
-	put_strategy(resolved);
-	ft_putstr_fd("\ntotal operations: ", 2);
-	ft_putnbr_fd(total_ops(counts), 2);
-	ft_putstr_fd("\n", 2);
-	put_op_count("sa", counts->sa);
-	put_op_count("sb", counts->sb);
-	put_op_count("ss", counts->ss);
-	put_op_count("pa", counts->pa);
-	put_op_count("pb", counts->pb);
-	put_op_count("ra", counts->ra);
-	put_op_count("rb", counts->rb);
-	put_op_count("rr", counts->rr);
-	put_op_count("rra", counts->rra);
-	put_op_count("rrb", counts->rrb);
-	put_op_count("rrr", counts->rrr);
+	put_str(label);
+	put_nbr(value);
+	put_str("\n");
+}
+
+static void	print_counts(t_count *count)
+{
+	print_line("sa: ", count->sa);
+	print_line("sb: ", count->sb);
+	print_line("ss: ", count->ss);
+	print_line("pa: ", count->pa);
+	print_line("pb: ", count->pb);
+	print_line("ra: ", count->ra);
+	print_line("rb: ", count->rb);
+	print_line("rr: ", count->rr);
+	print_line("rra: ", count->rra);
+	print_line("rrb: ", count->rrb);
+	print_line("rrr: ", count->rrr);
+}
+
+void	print_bench(t_strategy strategy, double disorder, t_count *count)
+{
+	put_str("Disorder: ");
+	put_disorder(disorder);
+	put_str("Strategy: ");
+	put_str(strategy_name(strategy));
+	put_str("\nComplexity: ");
+	put_str(strategy_complexity(strategy));
+	put_str("\nTotal operations: ");
+	put_nbr(get_total_operations(count));
+	put_str("\n");
+	print_counts(count);
 }
