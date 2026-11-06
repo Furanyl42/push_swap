@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>ft_printf</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+		<style>
+			body {
+				margin: 0;
+			}
+
+			.markdown-body-content {
+				box-sizing: border-box;
+				min-width: 200px;
+				max-width: 980px;
+				margin: 0 auto;
+				padding: 45px;
+			}
+
+			@media (max-width: 767px) {
+				.markdown-body-content {
+					padding: 15px;
+				}
+			}
+
+			.markdown-body {
+				--base-size-8: 8px;
+				--base-size-16: 16px;
+			}
+		</style>
+	</head>
+	<body class="markdown-body">
+		<article class="markdown-body-content"><p><em>This project has been created as part of the 42 curriculum by nide-wil.</em></p>
+<h1>ft_printf</h1>
+<h2>Description</h2>
+<p>The <strong>ft_printf</strong> project is a custom re-implementation of the standard C library function <code class="notranslate">printf</code>. Its primary goal is to gain a deep understanding of variadic functions (<code class="notranslate">stdarg.h</code>), complex string parsing, and raw output formatting in C.</p>
+<p>This implementation supports basic format specifiers (<code class="notranslate">c</code>, <code class="notranslate">s</code>, <code class="notranslate">p</code>, <code class="notranslate">d</code>, <code class="notranslate">i</code>, <code class="notranslate">u</code>, <code class="notranslate">x</code>, <code class="notranslate">X</code>, <code class="notranslate">%</code>), as well as the first set of bonus features: full management of field minimum width, left-justification (<code class="notranslate">-</code>), zero-padding (<code class="notranslate">0</code>), and precision (<code class="notranslate">.</code>) across supported conversions. The codebase strictly adheres to the 42 School Norm.</p>
+<h2>Instructions</h2>
+<h3>Compilation</h3>
+<p>The project builds the static library <code class="notranslate">libftprintf.a</code> using the provided <code class="notranslate">Makefile</code>.</p>
+<ul>
+<li>
+<p>Compile the library:</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">make</pre></div>
+</li>
+<li>
+<p>Clean object files:</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">make clean</pre></div>
+</li>
+<li>
+<p>Clean object files and static library:</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">make fclean</pre></div>
+</li>
+<li>
+<p>Rebuild the library:</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">make re</pre></div>
+</li>
+</ul>
+<h3>Usage</h3>
+<p>To use <code class="notranslate">ft_printf</code> in your own C project, include the header and link the compiled library:</p>
+<ol>
+<li>
+<p>Include the header in your C source file:</p>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-k">#include</span> <span class="pl-s">"ft_printf.h"</span></pre></div>
+</li>
+<li>
+<p>Compile your program with the library:</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">cc main.c libftprintf.a -o my_program</pre></div>
+</li>
+</ol>
+<h2>Algorithm and Data Structure Justification</h2>
+<p>To maintain strict compliance with 42 School Norm constraints (such as the 5-function-per-file limit and 25-line-per-function limit) while correctly handling flag combinations, the following architecture was chosen:</p>
+<h3>1. Data Structure: <code class="notranslate">t_flags</code> &amp; <code class="notranslate">t_number</code></h3>
+<ul>
+<li><strong><code class="notranslate">t_flags</code></strong>: Encapsulates the parsed formatting state (<code class="notranslate">minus</code>, <code class="notranslate">zero</code>, <code class="notranslate">dot</code>, <code class="notranslate">width</code>, <code class="notranslate">precision</code>, <code class="notranslate">specifier</code>). Passing a single structure pointer across sub-routines avoids long parameter lists and keeps functions concise.</li>
+<li><strong><code class="notranslate">t_number</code></strong>: Stores numeric conversion metadata (<code class="notranslate">value</code>, <code class="notranslate">sign</code>, <code class="notranslate">isneg</code>, <code class="notranslate">printsign</code>, <code class="notranslate">digit_len</code>, <code class="notranslate">width</code>, <code class="notranslate">base</code>) for integer and hexadecimal formatting. It normalizes padding and precision calculations across alignment helpers.</li>
+</ul>
+<h3>2. Algorithmic Architecture: Function Pointer Dispatch Table</h3>
+<p>Instead of a monolithic <code class="notranslate">switch</code> statement or an extensive <code class="notranslate">if/else</code> chain, the renderer relies on a <strong>Function Pointer Array</strong> (<code class="notranslate">t_func funcs[128]</code>):</p>
+<ul>
+<li><strong>Direct Dispatch</strong>: The specifier character (e.g., <code class="notranslate">'d'</code>, <code class="notranslate">'x'</code>, <code class="notranslate">'s'</code>) indexes directly into the array (<code class="notranslate">funcs[(unsigned char)specifier]</code>).</li>
+<li><strong>Decoupled Logic</strong>: Flag parsing (<code class="notranslate">parse.c</code>) is completely isolated from output rendering (<code class="notranslate">print_nbr.c</code>, <code class="notranslate">print_hex.c</code>, etc.).</li>
+<li><strong>Modularity</strong>: Formatting logic for padding and precision is split into small alignment functions (<code class="notranslate">ft_print_tnum_left</code>, <code class="notranslate">ft_print_tnum_zero</code>, <code class="notranslate">ft_print_tnum_right</code>), ensuring every function remains under the 25-line limit.</li>
+</ul>
+<h2>Testing</h2>
+<p>For quick evaluation or peer testing, create a main.c file at the root of the repository with the following code:</p>
+<div class="highlight highlight-source-c"><pre class="notranslate"><span class="pl-k">#include</span> <span class="pl-s">"ft_printf.h"</span>
+<span class="pl-k">#include</span> <span class="pl-s">&lt;stdio.h&gt;</span>
+
+<span class="pl-smi">int</span>	<span class="pl-en">main</span>(<span class="pl-smi">void</span>)
+{
+	<span class="pl-smi">int</span>	<span class="pl-s1">ret_ft</span>;
+	<span class="pl-smi">int</span>	<span class="pl-s1">ret_sys</span>;
+
+	<span class="pl-en">printf</span>(<span class="pl-s">"=========================================\n"</span>);
+	<span class="pl-en">printf</span>(<span class="pl-s">"          TESTS FT_PRINTF                \n"</span>);
+	<span class="pl-en">printf</span>(<span class="pl-s">"=========================================\n\n"</span>);
+
+	<span class="pl-c">// 1. Strings and Characters with width and '-' flag</span>
+	<span class="pl-en">printf</span>(<span class="pl-s">"--- [ %%c / %%s ] ---\n"</span>);
+	<span class="pl-s1">ret_ft</span> <span class="pl-c1">=</span> <span class="pl-en">ft_printf</span>(<span class="pl-s">"ft_printf  : [%-10c] [%15s] [%.4s]\n"</span>, <span class="pl-c1">'A'</span>, <span class="pl-s">"42 School"</span>, <span class="pl-s">"Hello World"</span>);
+	<span class="pl-s1">ret_sys</span> <span class="pl-c1">=</span> <span class="pl-en">printf</span>(<span class="pl-s">"sys_printf : [%-10c] [%15s] [%.4s]\n"</span>, <span class="pl-c1">'A'</span>, <span class="pl-s">"42 School"</span>, <span class="pl-s">"Hello World"</span>);
+	<span class="pl-en">printf</span>(<span class="pl-s">"Return -&gt; ft: %d | sys: %d\n\n"</span>, <span class="pl-s1">ret_ft</span>, <span class="pl-s1">ret_sys</span>);
+
+	<span class="pl-c">// 2. Integers with Precision (.), Flag 0 and Flag -</span>
+	<span class="pl-en">printf</span>(<span class="pl-s">"--- [ %%d / %%i ] ---\n"</span>);
+	<span class="pl-s1">ret_ft</span> <span class="pl-c1">=</span> <span class="pl-en">ft_printf</span>(<span class="pl-s">"ft_printf  : [%010d] [%-10d] [%.5d] [%10.5d]\n"</span>, <span class="pl-c1">42</span>, <span class="pl-c1">-42</span>, <span class="pl-c1">42</span>, <span class="pl-c1">42</span>);
+	<span class="pl-s1">ret_sys</span> <span class="pl-c1">=</span> <span class="pl-en">printf</span>(<span class="pl-s">"sys_printf : [%010d] [%-10d] [%.5d] [%10.5d]\n"</span>, <span class="pl-c1">42</span>, <span class="pl-c1">-42</span>, <span class="pl-c1">42</span>, <span class="pl-c1">42</span>);
+	<span class="pl-en">printf</span>(<span class="pl-s">"Return -&gt; ft: %d | sys: %d\n\n"</span>, <span class="pl-s1">ret_ft</span>, <span class="pl-s1">ret_sys</span>);
+
+	<span class="pl-c">// 3. Unsigned and Hexadecimal</span>
+	<span class="pl-en">printf</span>(<span class="pl-s">"--- [ %%u / %%x / %%X ] ---\n"</span>);
+	<span class="pl-s1">ret_ft</span> <span class="pl-c1">=</span> <span class="pl-en">ft_printf</span>(<span class="pl-s">"ft_printf  : [%10u] [%08x] [%-8X]\n"</span>, <span class="pl-c1">3000000000u</span>, <span class="pl-c1">255</span>, <span class="pl-c1">255</span>);
+	<span class="pl-s1">ret_sys</span> <span class="pl-c1">=</span> <span class="pl-en">printf</span>(<span class="pl-s">"sys_printf : [%10u] [%08x] [%-8X]\n"</span>, <span class="pl-c1">3000000000u</span>, <span class="pl-c1">255</span>, <span class="pl-c1">255</span>);
+	<span class="pl-en">printf</span>(<span class="pl-s">"Return -&gt; ft: %d | sys: %d\n\n"</span>, <span class="pl-s1">ret_ft</span>, <span class="pl-s1">ret_sys</span>);
+
+	<span class="pl-c">// 4. Pointer and NULL</span>
+	<span class="pl-en">printf</span>(<span class="pl-s">"--- [ %%p ] ---\n"</span>);
+	<span class="pl-s1">ret_ft</span> <span class="pl-c1">=</span> <span class="pl-en">ft_printf</span>(<span class="pl-s">"ft_printf  : [%20p] [%-20p]\n"</span>, <span class="pl-c1">&amp;</span><span class="pl-s1">ret_ft</span>, <span class="pl-c1">NULL</span>);
+	<span class="pl-s1">ret_sys</span> <span class="pl-c1">=</span> <span class="pl-en">printf</span>(<span class="pl-s">"sys_printf : [%20p] [%-20p]\n"</span>, <span class="pl-c1">&amp;</span><span class="pl-s1">ret_ft</span>, <span class="pl-c1">NULL</span>);
+	<span class="pl-en">printf</span>(<span class="pl-s">"Return -&gt; ft: %d | sys: %d\n\n"</span>, <span class="pl-s1">ret_ft</span>, <span class="pl-s1">ret_sys</span>);
+
+	<span class="pl-k">return</span> (<span class="pl-c1">0</span>);
+}</pre></div>
+<p>Then compile and run it:</p>
+<div class="highlight highlight-source-shell"><pre class="notranslate">make
+cc -Wall -Wextra -Werror main.c libftprintf.a -o test_printf
+./test_printf</pre></div>
+<h2>Resources</h2>
+<h3>References &amp; Documentation</h3>
+<ul>
+<li><a href="https://man7.org/linux/man-pages/man3/printf.3.html" rel="nofollow">Man page: printf(3)</a> - Standard C printf specification.</li>
+<li><a href="https://en.cppreference.com/w/c/variadic" rel="nofollow">stdarg.h documentation</a> - Details on C variadic macros (<code class="notranslate">va_start</code>, <code class="notranslate">va_arg</code>, <code class="notranslate">va_end</code>).</li>
+<li>C99 Language Specification (ISO/IEC 9899:1999) - Formal standard for format specifiers and flags.</li>
+</ul>
+<h3>Artificial Intelligence Usage</h3>
+<p>AI was used solely to assist in writing and formatting this <code class="notranslate">README.md</code> file. The code itself was written entirely by hand without AI assistance.</p></article>
+	</body>
+</html>
